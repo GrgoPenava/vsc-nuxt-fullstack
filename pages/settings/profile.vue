@@ -1,208 +1,119 @@
 <template>
-  <div class="container py-8">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6">Uredi profil</h1>
+  <div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-8">Uredi profil</h1>
 
-      <!-- Forma za uređivanje profila -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <form @submit.prevent="updateProfile" class="space-y-6">
-          <!-- Osnovni podaci -->
-          <div>
-            <h2 class="text-lg font-semibold mb-4">Osnovni podaci</h2>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Avatar sekcija -->
+        <div class="md:col-span-1">
+          <h2 class="text-lg font-medium mb-4">Avatar</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <!-- Korisnički podaci koji se ne mogu mijenjati -->
-              <div>
-                <label class="block text-sm font-medium mb-1"
-                  >Korisničko ime</label
-                >
-                <input
-                  type="text"
-                  class="w-full px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-700"
-                  :value="userData?.username"
-                  disabled
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  Korisničko ime se ne može mijenjati
-                </p>
-              </div>
+          <AvatarUpload v-if="user" :userId="user.id" />
+        </div>
 
-              <div>
-                <label class="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  class="w-full px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-700"
-                  :value="userData?.email"
-                  disabled
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  Email adresa se ne može mijenjati
-                </p>
-              </div>
+        <!-- Forma za uređivanje profila -->
+        <div class="md:col-span-2">
+          <h2 class="text-lg font-medium mb-4">Osobni podaci</h2>
+
+          <form @submit.prevent="updateProfile" class="space-y-4">
+            <!-- Username -->
+            <div>
+              <label for="username" class="block text-sm font-medium mb-1"
+                >Korisničko ime</label
+              >
+              <input
+                id="username"
+                v-model="profileForm.username"
+                type="text"
+                class="w-full px-3 py-2 border rounded-md"
+                placeholder="Korisničko ime"
+                disabled
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Korisničko ime se ne može mijenjati
+              </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Ime i prezime -->
+            <!-- Email -->
+            <div>
+              <label for="email" class="block text-sm font-medium mb-1"
+                >Email</label
+              >
+              <input
+                id="email"
+                v-model="profileForm.email"
+                type="email"
+                class="w-full px-3 py-2 border rounded-md"
+                placeholder="Email adresa"
+              />
+            </div>
+
+            <!-- Ime i prezime -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label for="firstName" class="block text-sm font-medium mb-1"
                   >Ime</label
                 >
                 <input
                   id="firstName"
-                  v-model="formData.firstName"
+                  v-model="profileForm.firstName"
                   type="text"
                   class="w-full px-3 py-2 border rounded-md"
-                  placeholder="Vaše ime"
+                  placeholder="Ime"
                 />
               </div>
-
               <div>
                 <label for="lastName" class="block text-sm font-medium mb-1"
                   >Prezime</label
                 >
                 <input
                   id="lastName"
-                  v-model="formData.lastName"
+                  v-model="profileForm.lastName"
                   type="text"
                   class="w-full px-3 py-2 border rounded-md"
-                  placeholder="Vaše prezime"
+                  placeholder="Prezime"
                 />
               </div>
             </div>
-          </div>
 
-          <!-- Avatar -->
-          <div>
-            <h2 class="text-lg font-semibold mb-4">Profilna slika</h2>
-
-            <div class="flex items-center space-x-6">
-              <div class="shrink-0">
-                <img
-                  :src="avatarPreview"
-                  alt="Profilna slika"
-                  class="h-24 w-24 object-cover rounded-full"
-                />
-              </div>
-
-              <div class="flex-1">
-                <label for="avatar" class="block text-sm font-medium mb-1"
-                  >URL profilne slike</label
-                >
-                <input
-                  id="avatar"
-                  v-model="formData.avatar"
-                  type="text"
-                  class="w-full px-3 py-2 border rounded-md"
-                  placeholder="https://primjer.com/slika.jpg"
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  Unesite URL do vaše profilne slike
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Biografija -->
-          <div>
-            <h2 class="text-lg font-semibold mb-4">Biografija</h2>
-
+            <!-- Bio -->
             <div>
               <label for="bio" class="block text-sm font-medium mb-1"
-                >O meni</label
+                >Bio</label
               >
               <textarea
                 id="bio"
-                v-model="formData.bio"
+                v-model="profileForm.bio"
                 rows="4"
-                class="w-full px-3 py-2 border rounded-md"
-                placeholder="Napišite nešto o sebi..."
+                class="w-full px-3 py-2 border rounded-md resize-none"
+                placeholder="Opiši se u nekoliko rečenica..."
               ></textarea>
-              <p class="text-xs text-gray-500 mt-1">Maksimalno 500 znakova</p>
             </div>
-          </div>
 
-          <!-- Promjena lozinke -->
-          <div>
-            <h2 class="text-lg font-semibold mb-4">Promjena lozinke</h2>
-            <p class="text-sm text-gray-500 mb-4">
-              Ostavite prazno ako ne želite mijenjati lozinku
-            </p>
-
-            <div class="space-y-4">
-              <div>
-                <label
-                  for="currentPassword"
-                  class="block text-sm font-medium mb-1"
-                  >Trenutna lozinka</label
-                >
-                <input
-                  id="currentPassword"
-                  v-model="formData.currentPassword"
-                  type="password"
-                  class="w-full px-3 py-2 border rounded-md"
-                  placeholder="********"
-                />
-              </div>
-
-              <div>
-                <label for="newPassword" class="block text-sm font-medium mb-1"
-                  >Nova lozinka</label
-                >
-                <input
-                  id="newPassword"
-                  v-model="formData.newPassword"
-                  type="password"
-                  class="w-full px-3 py-2 border rounded-md"
-                  placeholder="********"
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  Lozinka mora imati najmanje 6 znakova, jedno veliko slovo i
-                  jedan poseban znak
-                </p>
-              </div>
-
-              <div>
-                <label
-                  for="confirmNewPassword"
-                  class="block text-sm font-medium mb-1"
-                  >Potvrda nove lozinke</label
-                >
-                <input
-                  id="confirmNewPassword"
-                  v-model="formData.confirmNewPassword"
-                  type="password"
-                  class="w-full px-3 py-2 border rounded-md"
-                  placeholder="********"
-                />
-              </div>
+            <!-- Greška -->
+            <div v-if="error" class="bg-red-50 text-red-600 p-4 rounded-md">
+              {{ error }}
             </div>
-          </div>
 
-          <!-- Greška -->
-          <div v-if="error" class="bg-red-50 text-red-600 p-4 rounded-md">
-            {{ error }}
-          </div>
-
-          <!-- Gumbi -->
-          <div class="flex justify-end space-x-4">
-            <button
-              type="button"
-              class="px-4 py-2 border border-gray-300 rounded-md"
-              @click="resetForm"
-            >
-              Odustani
-            </button>
-
-            <button
-              type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              :disabled="isLoading"
-            >
-              <span v-if="isLoading">Spremanje...</span>
-              <span v-else>Spremi promjene</span>
-            </button>
-          </div>
-        </form>
+            <!-- Gumbi -->
+            <div class="flex justify-end space-x-3 pt-4">
+              <NuxtLink
+                to="/profile"
+                class="px-4 py-2 border border-gray-300 rounded-md"
+              >
+                Odustani
+              </NuxtLink>
+              <button
+                type="submit"
+                class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
+                :disabled="isLoading"
+              >
+                <span v-if="isLoading">Spremanje...</span>
+                <span v-else>Spremi promjene</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -213,92 +124,64 @@ import { useAuthStore } from "@/stores/auth";
 import { toast } from "@/components/ui/toast/use-toast";
 
 definePageMeta({
-  middleware: ["auth"],
+  middleware: ["auth"], // Koristimo auth middleware da osiguramo da je korisnik prijavljen
 });
 
+const router = useRouter();
 const authStore = useAuthStore();
-const userData = computed(() => authStore.user);
-const isLoading = computed(() => authStore.isLoading);
-const error = ref<string | null>(null);
+const isLoading = ref(false);
+const error = ref("");
+const user = computed(() => authStore.user);
 
-// Formular za uređivanje profila
-const formData = reactive({
+// Forma za uređivanje profila
+const profileForm = reactive({
+  username: "",
+  email: "",
   firstName: "",
   lastName: "",
   bio: "",
-  avatar: "",
-  currentPassword: "",
-  newPassword: "",
-  confirmNewPassword: "",
 });
 
-// Preview avatara
-const avatarPreview = computed(
-  () =>
-    formData.avatar ||
-    userData.value?.avatar ||
-    "https://i.pravatar.cc/150?img=30"
-);
-
-// Popuni obrazac s postojećim podacima
+// Popuni formu s trenutnim podacima korisnika
 onMounted(() => {
-  resetForm();
+  if (user.value) {
+    profileForm.username = user.value.username || "";
+    profileForm.email = user.value.email || "";
+    profileForm.firstName = user.value.firstName || "";
+    profileForm.lastName = user.value.lastName || "";
+    profileForm.bio = user.value.bio || "";
+  }
 });
 
-// Resetiraj obrazac na početne vrijednosti
-function resetForm() {
-  if (userData.value) {
-    formData.firstName = userData.value.firstName || "";
-    formData.lastName = userData.value.lastName || "";
-    formData.bio = userData.value.bio || "";
-    formData.avatar = userData.value.avatar || "";
-  }
-  formData.currentPassword = "";
-  formData.newPassword = "";
-  formData.confirmNewPassword = "";
-  error.value = null;
-}
-
-// Ažuriraj profil
+// Funkcija za ažuriranje profila
 async function updateProfile() {
   try {
-    error.value = null;
+    isLoading.value = true;
+    error.value = "";
 
-    // Filtriraj podatke - šalji samo popunjena polja
-    const profileData: any = {};
-    if (formData.firstName) profileData.firstName = formData.firstName;
-    if (formData.lastName) profileData.lastName = formData.lastName;
-    if (formData.bio !== undefined) profileData.bio = formData.bio;
-    if (formData.avatar) profileData.avatar = formData.avatar;
-
-    // Dodaj podatke za promjenu lozinke samo ako su uneseni
-    if (formData.newPassword) {
-      profileData.currentPassword = formData.currentPassword;
-      profileData.newPassword = formData.newPassword;
-      profileData.confirmNewPassword = formData.confirmNewPassword;
-    }
-
-    // Pošalji zahtjev za ažuriranje
-    const result = await authStore.updateProfile(profileData);
+    // Pozovi API za ažuriranje profila
+    const result = await authStore.updateProfile({
+      email: profileForm.email,
+      firstName: profileForm.firstName,
+      lastName: profileForm.lastName,
+      bio: profileForm.bio,
+    });
 
     if (result.success) {
       toast({
         title: "Uspješno",
-        description: "Profil je uspješno ažuriran",
+        description: "Vaš profil je uspješno ažuriran",
         variant: "default",
       });
 
-      // Resetiraj polja za lozinku
-      formData.currentPassword = "";
-      formData.newPassword = "";
-      formData.confirmNewPassword = "";
+      // Preusmjeri na profil
+      router.push("/profile");
     } else {
       error.value =
         result.error || "Došlo je do greške prilikom ažuriranja profila";
       toast({
         title: "Greška",
-        description:
-          error.value || "Došlo je do greške prilikom ažuriranja profila",
+        description: error.value,
         variant: "destructive",
       });
     }
@@ -307,9 +190,11 @@ async function updateProfile() {
       err.message || "Došlo je do greške prilikom ažuriranja profila";
     toast({
       title: "Greška",
-      description: "Došlo je do greške prilikom ažuriranja profila",
+      description: error.value,
       variant: "destructive",
     });
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

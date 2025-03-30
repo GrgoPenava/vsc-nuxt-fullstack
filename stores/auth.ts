@@ -4,12 +4,12 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  avatar?: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string | null;
   role: string;
   verified: boolean;
-  bio?: string;
+  bio?: string | null;
 }
 
 export interface AuthState {
@@ -165,31 +165,27 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async updateProfile(profileData: {
+      email?: string;
       firstName?: string;
       lastName?: string;
       bio?: string;
-      avatar?: string;
-      currentPassword?: string;
-      newPassword?: string;
-      confirmNewPassword?: string;
     }) {
       this.setLoading(true);
       this.setError(null);
 
       try {
-        const response = await $fetch<{ message: string; user: User }>(
-          "/api/users/update-profile",
-          {
-            method: "PUT",
-            body: profileData,
-            headers: this.getAuthHeaders,
-          }
-        );
+        const response = await $fetch("/api/users/updateProfile", {
+          method: "PUT",
+          body: profileData,
+          headers: this.getAuthHeaders,
+        });
 
-        // Ažuriraj korisničke podatke u store-u
-        this.setUser(response.user);
+        // Ažuriraj korisnika u storu
+        if (response.user) {
+          this.setUser(response.user);
+        }
 
-        return { success: true, message: response.message };
+        return { success: true, message: "Profil je uspješno ažuriran" };
       } catch (error: any) {
         const message =
           error.data?.statusMessage ||
@@ -198,6 +194,48 @@ export const useAuthStore = defineStore("auth", {
         return { success: false, error: message };
       } finally {
         this.setLoading(false);
+      }
+    },
+
+    async uploadAvatar(file: File) {
+      this.setLoading(true);
+      this.setError(null);
+
+      try {
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        const response = await $fetch("/api/users/uploadAvatar", {
+          method: "POST",
+          body: formData,
+          headers: this.getAuthHeaders,
+        });
+
+        // Dohvati osvježene podatke o korisniku
+        await this.fetchCurrentUser();
+
+        return { success: true, message: "Avatar je uspješno učitan" };
+      } catch (error: any) {
+        const message =
+          error.data?.statusMessage ||
+          "Došlo je do greške prilikom učitavanja avatara";
+        this.setError(message);
+        return { success: false, error: message };
+      } finally {
+        this.setLoading(false);
+      }
+    },
+
+    // Dodajemo metodu za dohvat URL-a avatara
+    async getAvatarUrl(userId: string) {
+      try {
+        const response = await $fetch<{ avatarUrl: string | null }>(
+          `/api/users/avatar?userId=${userId}`
+        );
+        return response.avatarUrl || null;
+      } catch (error) {
+        console.error("Error fetching avatar URL:", error);
+        return null;
       }
     },
   },
