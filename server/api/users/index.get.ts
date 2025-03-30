@@ -40,6 +40,7 @@ export default defineEventHandler(async (event: H3Event) => {
       role: user.role.name,
       verified: user.verified,
       bio: user.bio,
+      disabled: user.disabled,
       createdAt: user.createdAt,
     }));
 

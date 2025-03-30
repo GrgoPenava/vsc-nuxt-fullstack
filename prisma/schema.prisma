@@ -27,6 +27,7 @@ model User {
   verificationToken  String?
   resetPasswordToken String?
   bio                String?
+  disabled           DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   roleId             String

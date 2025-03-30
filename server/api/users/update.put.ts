@@ -18,95 +18,105 @@ const updateUserSchema = z.object({
     )
     .optional(),
   verified: z.boolean().optional(),
+  disabled: z.boolean().optional(),
 });
 
 export default defineEventHandler(async (event: H3Event) => {
   try {
     // Provjeri autentikaciju
-    if (!event.user || !event.user.id) {
+    if (!event.user) {
       throw createError({
         statusCode: 401,
-        statusMessage: "Potrebna je prijava",
+        statusMessage: "Potrebna je autentikacija",
       });
     }
 
-    // Provjeri admin role
+    // Provjeri administratorska prava
     if (event.user.role !== "admin") {
       throw createError({
         statusCode: 403,
-        statusMessage: "Nemate ovlasti za izmjenu korisnika",
+        statusMessage: "Nemate pravo pristupa ovom resursu",
       });
     }
 
-    const body = await readBody(event);
+    // Dohvati podatke iz zahtjeva
+    const {
+      userId,
+      email,
+      firstName,
+      lastName,
+      password,
+      roleId,
+      verified,
+      disabled,
+    } = await readBody(event);
 
-    // Validiraj podatke za ažuriranje
-    const validationResult = updateUserSchema.safeParse(body);
-
-    if (!validationResult.success) {
+    // Provjeri je li userId poslan
+    if (!userId) {
       throw createError({
         statusCode: 400,
-        statusMessage: validationResult.error.errors[0].message,
+        statusMessage: "ID korisnika je obavezan",
       });
     }
 
-    const validatedData = validationResult.data;
-    const { userId, ...updateData } = validatedData;
-
-    // Dohvati korisnika iz baze
-    const existingUser = await prisma.user.findUnique({
+    // Provjeri postoji li korisnik
+    const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
-    if (!existingUser) {
+    if (!user) {
       throw createError({
         statusCode: 404,
         statusMessage: "Korisnik nije pronađen",
       });
     }
 
-    // Pripremamo podatke za ažuriranje
-    const userData: any = {};
+    // Pripremi podatke za ažuriranje
+    const updateData: any = {};
 
-    if (updateData.email !== undefined) userData.email = updateData.email;
-    if (updateData.firstName !== undefined)
-      userData.firstName = updateData.firstName;
-    if (updateData.lastName !== undefined)
-      userData.lastName = updateData.lastName;
-    if (updateData.roleId !== undefined) userData.roleId = updateData.roleId;
-    if (updateData.verified !== undefined)
-      userData.verified = updateData.verified;
+    // Dodaj samo promijenjene vrijednosti
+    if (email !== undefined) updateData.email = email;
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (verified !== undefined) updateData.verified = verified;
+    if (roleId !== undefined) updateData.roleId = roleId;
 
-    // Ako je zadana nova lozinka, hashiraj je
-    if (updateData.password) {
-      userData.password = await hashPassword(updateData.password);
+    // Postavi ili resetiraj disabled status
+    if (disabled === true) {
+      // Postavi disabled na trenutno vrijeme
+      updateData.disabled = new Date();
+    } else if (disabled === false) {
+      // Resetiraj disabled na null
+      updateData.disabled = null;
     }
 
-    // Ažuriraj korisnika u bazi
+    // Ako je password poslan, hashiraj ga
+    if (password) {
+      updateData.password = await hashPassword(password);
+    }
+
+    // Ažuriraj korisnika
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: userData,
-      include: { role: true },
+      data: updateData,
+      include: {
+        role: true,
+      },
     });
 
-    // Pripremi odgovor bez osjetljivih podataka
-    const userResponse = {
-      id: updatedUser.id,
-      username: updatedUser.username,
-      email: updatedUser.email,
-      firstName: updatedUser.firstName,
-      lastName: updatedUser.lastName,
-      avatar: updatedUser.avatar,
-      role: updatedUser.role.name,
-      verified: updatedUser.verified,
-      bio: updatedUser.bio,
-    };
+    // Izostavi lozinku iz odgovora
+    const { password: _, ...userWithoutPassword } = updatedUser;
 
     return {
-      message: "Korisnik uspješno ažuriran",
-      user: userResponse,
+      success: true,
+      message: "Korisnik je uspješno ažuriran",
+      user: {
+        ...userWithoutPassword,
+        role: updatedUser.role.name,
+      },
     };
   } catch (error: any) {
+    console.error("Greška pri ažuriranju korisnika:", error);
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage:

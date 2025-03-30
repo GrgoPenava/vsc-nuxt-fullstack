@@ -11,11 +11,24 @@ export default defineEventHandler(async (event: H3Event) => {
       });
     }
 
-    // Dohvati podatke o korisniku
+    // Dohvati korisnika iz baze
     const user = await prisma.user.findUnique({
       where: { id: event.user.id },
-      include: {
-        role: true,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        avatar: true,
+        verified: true,
+        bio: true,
+        disabled: true,
+        role: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
@@ -26,20 +39,21 @@ export default defineEventHandler(async (event: H3Event) => {
       });
     }
 
-    // Pripremi odgovor bez osjetljivih podataka
-    const userResponse = {
+    // Pripremi odgovor
+    const response = {
       id: user.id,
       username: user.username,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       avatar: user.avatar,
-      role: user.role.name,
       verified: user.verified,
       bio: user.bio,
+      disabled: user.disabled,
+      role: user.role.name,
     };
 
-    return userResponse;
+    return response;
   } catch (error: any) {
     throw createError({
       statusCode: error.statusCode || 500,

@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
       <!-- Kartica s brojem korisnika -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400">
             Ukupno korisnika
@@ -17,6 +17,13 @@
             Verificirani korisnici
           </h3>
           <p class="text-3xl font-bold mt-2">{{ verifiedUsersCount }}</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400">
+            Disabled
+          </h3>
+          <p class="text-3xl font-bold mt-2">{{ disabledUsersCount }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -34,33 +41,45 @@
         >
           <h2 class="text-xl font-semibold">Upravljanje korisnicima</h2>
 
-          <!-- Pretraživanje -->
-          <div class="relative">
-            <div
-              class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+          <div class="flex flex-col md:flex-row gap-4">
+            <!-- Filter za status -->
+            <select
+              v-model="statusFilter"
+              class="px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              <svg
-                class="w-4 h-4 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 20"
+              <option value="all">Svi korisnici</option>
+              <option value="enabled">Samo omogućeni</option>
+              <option value="disabled">Samo onemogućeni</option>
+            </select>
+
+            <!-- Pretraživanje -->
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
               >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                />
-              </svg>
+                <svg
+                  class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="search"
+                v-model="searchQuery"
+                class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                placeholder="Pretraži po email ili username..."
+              />
             </div>
-            <input
-              type="search"
-              v-model="searchQuery"
-              class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-              placeholder="Pretraži po email ili username..."
-            />
           </div>
 
           <div v-if="isLoading" class="text-gray-500">Učitavanje...</div>
@@ -165,16 +184,46 @@
                   >
                     {{ user.verified ? "Verificiran" : "Neverificiran" }}
                   </span>
+
+                  <!-- Status računa (omogućen/onemogućen) -->
+                  <span
+                    v-if="user.disabled"
+                    class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                  >
+                    Onemogućen
+                  </span>
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                 >
-                  <button
-                    @click="openEditModal(user)"
-                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                  >
-                    Uredi
-                  </button>
+                  <div class="flex space-x-2 justify-end">
+                    <!-- Gumb za omogućavanje/onemogućavanje korisnika -->
+                    <button
+                      v-if="!user.disabled"
+                      @click="toggleUserStatus(user, true)"
+                      class="px-3 py-1 text-xs rounded bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
+                      :disabled="user.role === 'admin'"
+                      :class="{
+                        'opacity-50 cursor-not-allowed': user.role === 'admin',
+                      }"
+                    >
+                      Onemogući
+                    </button>
+                    <button
+                      v-else
+                      @click="toggleUserStatus(user, false)"
+                      class="px-3 py-1 text-xs rounded bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800"
+                    >
+                      Omogući
+                    </button>
+
+                    <button
+                      @click="openEditModal(user)"
+                      class="px-3 py-1 text-xs rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+                    >
+                      Uredi
+                    </button>
+                  </div>
                 </td>
               </tr>
               <!-- Ako nema rezultata pretrage -->
@@ -249,7 +298,7 @@
                   >
                     <path
                       fill-rule="evenodd"
-                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z"
                       clip-rule="evenodd"
                     />
                   </svg>
@@ -340,7 +389,7 @@
                   >
                     <path
                       fill-rule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      d="M4.293 15.707a1 1 0 001.414 0l5-5a1 1 0 000-1.414l-5-5a1 1 0 00-1.414 1.414L8.586 10 4.293 14.293a1 1 0 000 1.414zm6 0a1 1 0 001.414 0l5-5a1 1 0 000-1.414l-5-5a1 1 0 00-1.414 1.414L14.586 10l-4.293 4.293a1 1 0 000 1.414z"
                       clip-rule="evenodd"
                     />
                   </svg>
@@ -366,6 +415,87 @@
       </div>
 
       <form @submit.prevent="updateUser" class="p-4">
+        <!-- Avatar korisnika -->
+        <div class="mb-6 flex flex-col items-center">
+          <div class="relative group mb-3">
+            <template v-if="previewSrc">
+              <img
+                :src="previewSrc"
+                class="h-24 w-24 rounded-full object-cover border-2 border-teal-400"
+                alt="Avatar Preview"
+              />
+            </template>
+            <template v-else-if="editUserAvatar">
+              <img
+                :src="editUserAvatar"
+                class="h-24 w-24 rounded-full object-cover border-2 border-teal-400"
+                alt="Avatar"
+              />
+            </template>
+            <template v-else>
+              <div
+                class="h-24 w-24 rounded-full border-2 border-teal-400 bg-teal-500 flex items-center justify-center text-white font-bold text-xl"
+              >
+                {{ getUserInitials(editUserForm) }}
+              </div>
+            </template>
+
+            <!-- Overlay s ikonom za promjenu -->
+            <div
+              class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            >
+              <label for="avatar-edit-upload" class="cursor-pointer p-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-8 w-8 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </label>
+              <input
+                id="avatar-edit-upload"
+                type="file"
+                class="hidden"
+                accept="image/*"
+                @change="handleAvatarFileChange"
+              />
+            </div>
+          </div>
+
+          <div class="flex space-x-2">
+            <button
+              v-if="editUserAvatar || previewSrc"
+              type="button"
+              class="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+              @click="deleteAvatar"
+            >
+              Obriši avatar
+            </button>
+            <button
+              v-if="previewSrc"
+              type="button"
+              class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
+              @click="cancelAvatarChange"
+            >
+              Poništi
+            </button>
+          </div>
+        </div>
+
         <div class="space-y-4">
           <!-- Email -->
           <div>
@@ -510,18 +640,30 @@ const editUserForm = reactive({
   verified: false,
 });
 
+// Stanja za avatar
+const editUserAvatar = ref<string | null>(null);
+const previewSrc = ref<string | null>(null);
+const avatarFile = ref<File | null>(null);
+const avatarToDelete = ref(false);
+
 // Podaci o korisnicima i rolama
 const users = ref<any[]>([]);
 const roles = ref<any[]>([]);
 
-// Statistika korisnika
-const verifiedUsersCount = computed(
-  () => users.value.filter((user) => user.verified).length
-);
+// Izračunaj broj verificiranih korisnika
+const verifiedUsersCount = computed(() => {
+  return users.value.filter((user) => user.verified).length;
+});
 
-const adminUsersCount = computed(
-  () => users.value.filter((user) => user.role === "admin").length
-);
+// Izračunaj broj onemogućenih korisnika
+const disabledUsersCount = computed(() => {
+  return users.value.filter((user) => user.disabled).length;
+});
+
+// Izračunaj broj admin korisnika
+const adminUsersCount = computed(() => {
+  return users.value.filter((user) => user.role === "admin").length;
+});
 
 // Pretraživanje
 const searchQuery = ref("");
@@ -530,16 +672,31 @@ const searchQuery = ref("");
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
-// Filtriranje korisnika na temelju pretrage
-const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value;
+// Status filter
+const statusFilter = ref("all");
 
-  const query = searchQuery.value.toLowerCase();
-  return users.value.filter(
-    (user) =>
-      user.email.toLowerCase().includes(query) ||
-      user.username.toLowerCase().includes(query)
-  );
+// Filtriranje korisnika na temelju pretrage i statusa
+const filteredUsers = computed(() => {
+  let filtered = users.value;
+
+  // Primijeni filter za status
+  if (statusFilter.value === "enabled") {
+    filtered = filtered.filter((user) => !user.disabled);
+  } else if (statusFilter.value === "disabled") {
+    filtered = filtered.filter((user) => user.disabled);
+  }
+
+  // Primijeni filter za pretragu
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(
+      (user) =>
+        user.email.toLowerCase().includes(query) ||
+        user.username.toLowerCase().includes(query)
+    );
+  }
+
+  return filtered;
 });
 
 // Izračunaj ukupan broj stranica
@@ -609,8 +766,8 @@ const paginationEnd = computed(() => {
   );
 });
 
-// Resetiraj stranicu kad se promijeni pretraga
-watch(searchQuery, () => {
+// Resetiraj stranicu kad se promijeni filter
+watch([searchQuery, statusFilter], () => {
   currentPage.value = 1;
 });
 
@@ -670,11 +827,66 @@ function openEditModal(user: any) {
   editUserForm.roleId = userRole?.id || "";
   editUserForm.verified = user.verified;
 
+  // Postavi avatar korisnika
+  editUserAvatar.value = user.avatar;
+  previewSrc.value = null;
+  avatarFile.value = null;
+  avatarToDelete.value = false;
+
   editModalOpen.value = true;
 }
 
 function closeEditModal() {
   editModalOpen.value = false;
+
+  // Resetiraj stanja avatara
+  editUserAvatar.value = null;
+  previewSrc.value = null;
+  avatarFile.value = null;
+  avatarToDelete.value = false;
+}
+
+// Funkcija za rukovanje odabirom datoteke za avatar
+function handleAvatarFileChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const files = input.files;
+
+  if (!files || files.length === 0) {
+    return;
+  }
+
+  const file = files[0];
+  const supportedTypes = ["image/png", "image/jpeg", "image/jpg"];
+
+  // Provjeri je li datoteka slika
+  if (!supportedTypes.includes(file.type)) {
+    toast({
+      title: "Greška",
+      description: "Možete prenijeti samo slike",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Postavi datoteku i prikaz previewa
+  avatarFile.value = file;
+  previewSrc.value = URL.createObjectURL(file);
+  avatarToDelete.value = false;
+}
+
+// Funkcija za poništavanje promjene avatara
+function cancelAvatarChange() {
+  previewSrc.value = null;
+  avatarFile.value = null;
+  avatarToDelete.value = false;
+}
+
+// Funkcija za brisanje avatara
+function deleteAvatar() {
+  previewSrc.value = null;
+  avatarFile.value = null;
+  editUserAvatar.value = null;
+  avatarToDelete.value = true;
 }
 
 async function updateUser() {
@@ -689,9 +901,44 @@ async function updateUser() {
     if (editUserForm.roleId) updateData.roleId = editUserForm.roleId;
     updateData.verified = editUserForm.verified;
 
+    // Prvo ažuriramo korisničke podatke
     const result = await userStore.updateUser(updateData);
 
     if (result.success) {
+      let avatarChanged = false;
+
+      // Ako postoji nova datoteka za upload
+      if (avatarFile.value) {
+        try {
+          await uploadUserAvatar(editUserForm.userId, avatarFile.value);
+          avatarChanged = true;
+        } catch (error) {
+          console.error("Greška pri uploadu avatara:", error);
+          toast({
+            title: "Upozorenje",
+            description:
+              "Korisnički podaci su ažurirani, ali avatar nije uspješno učitan",
+            variant: "destructive",
+          });
+        }
+      }
+
+      // Ako je avatar označen za brisanje
+      if (avatarToDelete.value) {
+        try {
+          await deleteUserAvatar(editUserForm.userId);
+          avatarChanged = true;
+        } catch (error) {
+          console.error("Greška pri brisanju avatara:", error);
+          toast({
+            title: "Upozorenje",
+            description:
+              "Korisnički podaci su ažurirani, ali avatar nije uspješno obrisan",
+            variant: "destructive",
+          });
+        }
+      }
+
       // Ažuriraj korisnika u lokalnoj listi odmah
       const userIndex = users.value.findIndex(
         (u) => u.id === editUserForm.userId
@@ -714,6 +961,12 @@ async function updateUser() {
           role: roleName,
           verified: editUserForm.verified,
         };
+
+        // Ažuriraj avatar ako je promijenjen
+        if (avatarChanged) {
+          // Osvježi sve avatare nakon promjene
+          await fetchUserAvatars();
+        }
       }
 
       // Prikaži toast obavijest
@@ -742,6 +995,27 @@ async function updateUser() {
   }
 }
 
+// Funkcija za upload avatara za korisnika
+async function uploadUserAvatar(userId: string, file: File) {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  formData.append("userId", userId); // Dodajemo userId da znamo za kojeg korisnika spremamo avatar
+
+  await $fetch("/api/admin/uploadUserAvatar", {
+    method: "POST",
+    body: formData,
+    headers: authStore.getAuthHeaders,
+  });
+}
+
+// Funkcija za brisanje avatara korisnika
+async function deleteUserAvatar(userId: string) {
+  await $fetch(`/api/admin/deleteUserAvatar?userId=${userId}`, {
+    method: "DELETE",
+    headers: authStore.getAuthHeaders,
+  });
+}
+
 // Prilagođeno za template kako bismo mogli provjeriti je li vrijednost string ili broj
 function isNumber(value: any): boolean {
   return typeof value === "number";
@@ -767,5 +1041,47 @@ function getUserInitials(user: {
   }
 
   return "U";
+}
+
+// Funkcija za omogućavanje/onemogućavanje korisnika
+async function toggleUserStatus(user: any, disableUser: boolean) {
+  try {
+    const result = await userStore.updateUser({
+      userId: user.id,
+      disabled: disableUser,
+    });
+
+    if (result.success) {
+      // Ažuriraj korisnika u lokalnoj listi odmah
+      const userIndex = users.value.findIndex((u) => u.id === user.id);
+      if (userIndex !== -1) {
+        // Ažuriraj disabled status
+        users.value[userIndex].disabled = disableUser ? new Date() : null;
+      }
+
+      // Prikaži toast obavijest
+      toast({
+        title: "Uspješno",
+        description: disableUser
+          ? `Korisnički račun ${user.firstName} ${user.lastName} je onemogućen`
+          : `Korisnički račun ${user.firstName} ${user.lastName} je omogućen`,
+        variant: "default",
+      });
+    } else {
+      toast({
+        title: "Greška",
+        description:
+          result.error || "Došlo je do greške prilikom ažuriranja korisnika",
+        variant: "destructive",
+      });
+    }
+  } catch (err: any) {
+    toast({
+      title: "Greška",
+      description:
+        err.message || "Došlo je do greške prilikom ažuriranja korisnika",
+      variant: "destructive",
+    });
+  }
 }
 </script>
