@@ -10,6 +10,8 @@ export interface User {
   role: string;
   verified: boolean;
   bio?: string | null;
+  language?: string;
+  disabled?: Date | null;
 }
 
 export interface AuthState {
@@ -242,6 +244,38 @@ export const useAuthStore = defineStore("auth", {
       } catch (error) {
         console.error("Error fetching avatar URL:", error);
         return null;
+      }
+    },
+
+    // Dodajem metodu za ažuriranje jezika korisnika
+    async updateLanguage(language: string) {
+      this.setLoading(true);
+      this.setError(null);
+
+      try {
+        const response = await $fetch<{ user: User }>(
+          "/api/users/updateLanguage",
+          {
+            method: "PUT",
+            body: { language },
+            headers: this.getAuthHeaders,
+          }
+        );
+
+        // Ažuriraj korisnika u storu
+        if (response.user) {
+          this.setUser(response.user);
+        }
+
+        return { success: true, message: "Jezik je uspješno ažuriran" };
+      } catch (error: any) {
+        const message =
+          error.data?.statusMessage ||
+          "Došlo je do greške prilikom ažuriranja jezika";
+        this.setError(message);
+        return { success: false, error: message };
+      } finally {
+        this.setLoading(false);
       }
     },
   },

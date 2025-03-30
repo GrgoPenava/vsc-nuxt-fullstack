@@ -28,26 +28,27 @@
                 to="/"
                 active-class="text-teal-400"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
-                >Home</NuxtLink
+                >{{ t("common.home") }}</NuxtLink
               >
               <NuxtLink
                 to="/explore"
                 active-class="text-teal-400"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
-                >Explore</NuxtLink
+                >{{ t("common.explore") }}</NuxtLink
               >
               <NuxtLink
                 v-if="isAdmin"
                 to="/admin/dashboard"
                 active-class="text-teal-400"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
-                >Dashboard</NuxtLink
+                >{{ t("common.dashboard") }}</NuxtLink
               >
             </div>
           </div>
 
           <div class="flex items-center space-x-4">
             <ThemeToggle />
+            <LanguageSwitcher />
 
             <template v-if="isLoggedIn">
               <div class="relative profile-dropdown">
@@ -83,17 +84,17 @@
                   <NuxtLink
                     to="/profile"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    >Your Profile</NuxtLink
+                    >{{ t("common.profile") }}</NuxtLink
                   >
                   <NuxtLink
                     to="/settings/profile"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    >Edit Profile</NuxtLink
+                    >{{ t("profile.editProfile") }}</NuxtLink
                   >
                   <NuxtLink
                     to="/settings"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    >Settings</NuxtLink
+                    >{{ t("common.settings") }}</NuxtLink
                   >
                   <div
                     class="border-t border-gray-100 dark:border-gray-700"
@@ -102,7 +103,7 @@
                     @click="signOut"
                     class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   >
-                    Sign out
+                    {{ t("common.logout") }}
                   </button>
                 </div>
               </div>
@@ -113,13 +114,13 @@
                 to="/login"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
               >
-                Log in
+                {{ t("common.login") }}
               </NuxtLink>
               <NuxtLink
                 to="/register"
                 class="py-2 px-4 bg-teal-500 hover:bg-teal-600 rounded-md transition-colors"
               >
-                Sign up
+                {{ t("common.signup") }}
               </NuxtLink>
             </template>
 
@@ -163,18 +164,18 @@
           <NuxtLink
             to="/"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-            >Home</NuxtLink
+            >{{ t("common.home") }}</NuxtLink
           >
           <NuxtLink
             to="/explore"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-            >Explore</NuxtLink
+            >{{ t("common.explore") }}</NuxtLink
           >
           <NuxtLink
             v-if="isAdmin"
             to="/admin/dashboard"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-            >Dashboard</NuxtLink
+            >{{ t("common.dashboard") }}</NuxtLink
           >
         </div>
       </div>
@@ -225,8 +226,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useTranslation } from "@/composables/useTranslation";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher.vue";
 
 const authStore = useAuthStore();
+const { t } = useTranslation();
 
 // Dohvati podatke o prijavljenom korisniku iz auth store-a
 const isLoggedIn = computed(() => authStore.isLoggedIn);

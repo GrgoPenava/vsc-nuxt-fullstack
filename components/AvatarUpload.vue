@@ -70,7 +70,7 @@
     </div>
 
     <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-      Kliknite na sliku da promijenite avatar
+      {{ t("profile.clickToChangeAvatar") }}
     </p>
 
     <!-- Prikaz greške -->
@@ -84,12 +84,14 @@
 import { ref, onMounted, watch, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "@/components/ui/toast/use-toast";
+import { useTranslation } from "@/composables/useTranslation";
 
 const props = defineProps<{
   userId: string;
 }>();
 
 const authStore = useAuthStore();
+const { t } = useTranslation();
 const isUploading = ref(false);
 const error = ref("");
 const previewSrc = ref("");
@@ -157,18 +159,17 @@ async function handleFileChange(event: Event) {
 
     if (result.success) {
       toast({
-        title: "Uspješno",
-        description: "Avatar je uspješno promijenjen",
+        title: t("common.success"),
+        description: t("profile.uploadSuccess"),
         variant: "default",
       });
 
       // Osvježi URL avatara
       await fetchAvatarUrl();
     } else {
-      error.value =
-        result.error || "Došlo je do greške prilikom učitavanja avatara";
+      error.value = result.error || t("errors.profile");
       toast({
-        title: "Greška",
+        title: t("common.error"),
         description: error.value,
         variant: "destructive",
       });
@@ -177,10 +178,9 @@ async function handleFileChange(event: Event) {
       previewSrc.value = "";
     }
   } catch (err: any) {
-    error.value =
-      err.message || "Došlo je do greške prilikom učitavanja avatara";
+    error.value = err.message || t("errors.profile");
     toast({
-      title: "Greška",
+      title: t("common.error"),
       description: error.value,
       variant: "destructive",
     });

@@ -1,34 +1,34 @@
 <template>
   <div class="container py-8">
     <div class="max-w-6xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <h1 class="text-2xl font-bold mb-6">{{ t("admin.dashboard") }}</h1>
 
       <!-- Kartica s brojem korisnika -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400">
-            Ukupno korisnika
+            {{ t("admin.totalUsers") }}
           </h3>
           <p class="text-3xl font-bold mt-2">{{ users.length }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400">
-            Verificirani korisnici
+            {{ t("admin.verifiedUsers") }}
           </h3>
           <p class="text-3xl font-bold mt-2">{{ verifiedUsersCount }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400">
-            Disabled
+            {{ t("admin.disabledUsers") }}
           </h3>
           <p class="text-3xl font-bold mt-2">{{ disabledUsersCount }}</p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400">
-            Admini
+            {{ t("admin.adminUsers") }}
           </h3>
           <p class="text-3xl font-bold mt-2">{{ adminUsersCount }}</p>
         </div>
@@ -39,7 +39,7 @@
         <div
           class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center gap-4"
         >
-          <h2 class="text-xl font-semibold">Upravljanje korisnicima</h2>
+          <h2 class="text-xl font-semibold">{{ t("admin.users") }}</h2>
 
           <div class="flex flex-col md:flex-row gap-4">
             <!-- Filter za status -->
@@ -47,9 +47,9 @@
               v-model="statusFilter"
               class="px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              <option value="all">Svi korisnici</option>
-              <option value="enabled">Samo omogućeni</option>
-              <option value="disabled">Samo onemogućeni</option>
+              <option value="all">{{ t("admin.allUsers") }}</option>
+              <option value="enabled">{{ t("admin.onlyEnabled") }}</option>
+              <option value="disabled">{{ t("admin.onlyDisabled") }}</option>
             </select>
 
             <!-- Pretraživanje -->
@@ -77,12 +77,14 @@
                 type="search"
                 v-model="searchQuery"
                 class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                placeholder="Pretraži po email ili username..."
+                :placeholder="t('common.search') + '...'"
               />
             </div>
           </div>
 
-          <div v-if="isLoading" class="text-gray-500">Učitavanje...</div>
+          <div v-if="isLoading" class="text-gray-500">
+            {{ t("common.loading") }}
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -94,27 +96,27 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Korisnik
+                  {{ t("admin.user") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Email
+                  {{ t("auth.email") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Uloga
+                  {{ t("admin.role") }}
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Status
+                  {{ t("admin.status") }}
                 </th>
                 <th
                   class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                  Akcije
+                  {{ t("admin.actions") }}
                 </th>
               </tr>
             </thead>
@@ -182,7 +184,11 @@
                         : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                     "
                   >
-                    {{ user.verified ? "Verificiran" : "Neverificiran" }}
+                    {{
+                      user.verified
+                        ? t("admin.verified")
+                        : t("admin.unverified")
+                    }}
                   </span>
 
                   <!-- Status računa (omogućen/onemogućen) -->
@@ -190,7 +196,7 @@
                     v-if="user.disabled"
                     class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                   >
-                    Onemogućen
+                    {{ t("admin.disabled") }}
                   </span>
                 </td>
                 <td
@@ -207,21 +213,21 @@
                         'opacity-50 cursor-not-allowed': user.role === 'admin',
                       }"
                     >
-                      Onemogući
+                      {{ t("admin.disable") }}
                     </button>
                     <button
                       v-else
                       @click="toggleUserStatus(user, false)"
                       class="px-3 py-1 text-xs rounded bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800"
                     >
-                      Omogući
+                      {{ t("admin.enable") }}
                     </button>
 
                     <button
                       @click="openEditModal(user)"
                       class="px-3 py-1 text-xs rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
                     >
-                      Uredi
+                      {{ t("admin.edit") }}
                     </button>
                   </div>
                 </td>
@@ -232,7 +238,7 @@
                   colspan="5"
                   class="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
                 >
-                  Nema pronađenih korisnika
+                  {{ t("admin.noUsersFound") }}
                 </td>
               </tr>
             </tbody>
@@ -250,7 +256,7 @@
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
               :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
             >
-              Prethodna
+              {{ t("admin.previous") }}
             </button>
             <button
               @click="currentPage++"
@@ -260,7 +266,7 @@
                 'opacity-50 cursor-not-allowed': currentPage === totalPages,
               }"
             >
-              Sljedeća
+              {{ t("admin.next") }}
             </button>
           </div>
           <div
@@ -268,11 +274,13 @@
           >
             <div>
               <p class="text-sm text-gray-700 dark:text-gray-300">
-                Prikazuje se
-                <span class="font-medium">{{ paginationStart }}</span> do
-                <span class="font-medium">{{ paginationEnd }}</span> od
+                {{ t("admin.showing") }}
+                <span class="font-medium">{{ paginationStart }}</span>
+                {{ t("admin.to") }}
+                <span class="font-medium">{{ paginationEnd }}</span>
+                {{ t("admin.of") }}
                 <span class="font-medium">{{ filteredUsers.length }}</span>
-                korisnika
+                {{ t("admin.users").toLowerCase() }}
               </p>
             </div>
             <div>
@@ -288,7 +296,7 @@
                     'opacity-50 cursor-not-allowed': currentPage === 1,
                   }"
                 >
-                  <span class="sr-only">Prva</span>
+                  <span class="sr-only">{{ t("admin.first") }}</span>
                   <svg
                     class="h-5 w-5"
                     xmlns="http://www.w3.org/2000/svg"
@@ -311,7 +319,7 @@
                     'opacity-50 cursor-not-allowed': currentPage === 1,
                   }"
                 >
-                  <span class="sr-only">Prethodna</span>
+                  <span class="sr-only">{{ t("admin.previous") }}</span>
                   <svg
                     class="h-5 w-5"
                     xmlns="http://www.w3.org/2000/svg"
@@ -356,7 +364,7 @@
                     'opacity-50 cursor-not-allowed': currentPage === totalPages,
                   }"
                 >
-                  <span class="sr-only">Sljedeća</span>
+                  <span class="sr-only">{{ t("admin.next") }}</span>
                   <svg
                     class="h-5 w-5"
                     xmlns="http://www.w3.org/2000/svg"
@@ -379,7 +387,7 @@
                     'opacity-50 cursor-not-allowed': currentPage === totalPages,
                   }"
                 >
-                  <span class="sr-only">Zadnja</span>
+                  <span class="sr-only">{{ t("admin.last") }}</span>
                   <svg
                     class="h-5 w-5"
                     xmlns="http://www.w3.org/2000/svg"
@@ -411,7 +419,7 @@
       class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md mx-4"
     >
       <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold">Uredi korisnika</h3>
+        <h3 class="text-lg font-semibold">{{ t("admin.editUser") }}</h3>
       </div>
 
       <form @submit.prevent="updateUser" class="p-4">
@@ -483,7 +491,7 @@
               class="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
               @click="deleteAvatar"
             >
-              Obriši avatar
+              {{ t("profile.deleteAvatar") }}
             </button>
             <button
               v-if="previewSrc"
@@ -491,7 +499,7 @@
               class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
               @click="cancelAvatarChange"
             >
-              Poništi
+              {{ t("profile.cancel") }}
             </button>
           </div>
         </div>
@@ -499,69 +507,68 @@
         <div class="space-y-4">
           <!-- Email -->
           <div>
-            <label for="email" class="block text-sm font-medium mb-1"
-              >Email</label
-            >
+            <label for="email" class="block text-sm font-medium mb-1">{{
+              t("auth.email")
+            }}</label>
             <input
               id="email"
               v-model="editUserForm.email"
               type="email"
               class="w-full px-3 py-2 border rounded-md"
-              placeholder="Email korisnika"
+              :placeholder="t('auth.email')"
             />
           </div>
 
           <!-- Ime i prezime -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="firstName" class="block text-sm font-medium mb-1"
-                >Ime</label
-              >
+              <label for="firstName" class="block text-sm font-medium mb-1">{{
+                t("auth.firstName")
+              }}</label>
               <input
                 id="firstName"
                 v-model="editUserForm.firstName"
                 type="text"
                 class="w-full px-3 py-2 border rounded-md"
-                placeholder="Ime"
+                :placeholder="t('auth.firstName')"
               />
             </div>
             <div>
-              <label for="lastName" class="block text-sm font-medium mb-1"
-                >Prezime</label
-              >
+              <label for="lastName" class="block text-sm font-medium mb-1">{{
+                t("auth.lastName")
+              }}</label>
               <input
                 id="lastName"
                 v-model="editUserForm.lastName"
                 type="text"
                 class="w-full px-3 py-2 border rounded-md"
-                placeholder="Prezime"
+                :placeholder="t('auth.lastName')"
               />
             </div>
           </div>
 
           <!-- Nova lozinka -->
           <div>
-            <label for="password" class="block text-sm font-medium mb-1"
-              >Nova lozinka</label
-            >
+            <label for="password" class="block text-sm font-medium mb-1">{{
+              t("admin.newPassword")
+            }}</label>
             <input
               id="password"
               v-model="editUserForm.password"
               type="password"
               class="w-full px-3 py-2 border rounded-md"
-              placeholder="Ostavite prazno ako ne želite mijenjati"
+              :placeholder="t('admin.leaveEmptyPassword')"
             />
             <p class="text-xs text-gray-500 mt-1">
-              Lozinka mora imati najmanje 6 znakova, jedno veliko slovo i jedan
-              poseban znak
+              {{ t("auth.passwordRules") }}
             </p>
           </div>
 
           <!-- Uloga -->
           <div>
-            <label for="roleId" class="block text-sm font-medium mb-1"
-              >Uloga</label
-            >
+            <label for="roleId" class="block text-sm font-medium mb-1">{{
+              t("admin.role")
+            }}</label>
             <select
               id="roleId"
               v-model="editUserForm.roleId"
@@ -582,7 +589,7 @@
               class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
             />
             <label for="verified" class="ml-2 block text-sm">
-              Verificiran korisnik
+              {{ t("admin.verifiedUser") }}
             </label>
           </div>
 
@@ -598,15 +605,15 @@
             class="px-4 py-2 border border-gray-300 rounded-md"
             @click="closeEditModal"
           >
-            Odustani
+            {{ t("profile.cancel") }}
           </button>
           <button
             type="submit"
             class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
             :disabled="isLoading"
           >
-            <span v-if="isLoading">Spremanje...</span>
-            <span v-else>Spremi promjene</span>
+            <span v-if="isLoading">{{ t("admin.saving") }}</span>
+            <span v-else>{{ t("profile.saveChanges") }}</span>
           </button>
         </div>
       </form>
@@ -618,6 +625,7 @@
 import { useUserStore } from "@/stores/user";
 import { toast } from "@/components/ui/toast/use-toast";
 import { useAuthStore } from "@/stores/auth";
+import { useTranslation } from "@/composables/useTranslation";
 
 definePageMeta({
   middleware: ["admin"],
@@ -625,6 +633,7 @@ definePageMeta({
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
+const { t } = useTranslation();
 const isLoading = computed(() => userStore.isLoading);
 const error = computed(() => userStore.error);
 

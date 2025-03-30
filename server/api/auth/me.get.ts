@@ -24,6 +24,7 @@ export default defineEventHandler(async (event: H3Event) => {
         verified: true,
         bio: true,
         disabled: true,
+        language: true,
         role: {
           select: {
             name: true,
@@ -50,6 +51,7 @@ export default defineEventHandler(async (event: H3Event) => {
       verified: user.verified,
       bio: user.bio,
       disabled: user.disabled,
+      language: user.language,
       role: user.role.name,
     };
 

@@ -36,7 +36,7 @@
               <!-- Badge za verifikaciju -->
               <div
                 v-if="user.verified"
-                title="Verificirani korisnik"
+                :title="t('admin.verifiedUser')"
                 class="absolute bottom-0 right-0 w-6 h-6 md:w-8 md:h-8 bg-blue-500 text-white rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800"
               >
                 <svg
@@ -81,39 +81,43 @@
                     d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
                   />
                 </svg>
-                Uredi profil
+                {{ t("profile.editProfile") }}
               </NuxtLink>
             </div>
           </div>
 
           <!-- Sadržaj profila -->
           <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <h2 class="text-xl font-semibold mb-4">O meni</h2>
+            <h2 class="text-xl font-semibold mb-4">
+              {{ t("profile.aboutMe") }}
+            </h2>
             <p v-if="user.bio" class="text-gray-700 dark:text-gray-300">
               {{ user.bio }}
             </p>
             <p v-else class="text-gray-500 dark:text-gray-400 italic">
-              Korisnik nije dodao biografiju.
+              {{ t("profile.noBio") }}
             </p>
           </div>
 
           <!-- Dodatne sekcije profila -->
           <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <h2 class="text-xl font-semibold mb-4">Detalji profila</h2>
+            <h2 class="text-xl font-semibold mb-4">
+              {{ t("profile.profileDetails") }}
+            </h2>
 
             <div class="space-y-2">
               <div class="flex flex-col md:flex-row md:items-center">
                 <span class="text-gray-500 dark:text-gray-400 md:w-32"
-                  >Član od:</span
+                  >{{ t("profile.memberSince") }}:</span
                 >
                 <span class="text-gray-700 dark:text-gray-300">
-                  Siječanj 2023
+                  {{ t("profile.january") }} 2023
                 </span>
               </div>
 
               <div class="flex flex-col md:flex-row md:items-center">
                 <span class="text-gray-500 dark:text-gray-400 md:w-32"
-                  >Uloga:</span
+                  >{{ t("admin.role") }}:</span
                 >
                 <span
                   class="px-2 py-1 inline-flex text-xs leading-4 font-medium rounded-full"
@@ -135,7 +139,9 @@
         v-else
         class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center"
       >
-        <p class="text-gray-700 dark:text-gray-300">Korisnik nije pronađen.</p>
+        <p class="text-gray-700 dark:text-gray-300">
+          {{ t("profile.userNotFound") }}
+        </p>
       </div>
     </div>
   </div>
@@ -143,9 +149,11 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
+import { useTranslation } from "@/composables/useTranslation";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useTranslation();
 const user = computed(() => authStore.user);
 const isLoading = computed(() => authStore.isLoading);
 const defaultAvatar = "https://i.pravatar.cc/150?img=30";

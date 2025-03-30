@@ -28,6 +28,7 @@ model User {
   resetPasswordToken String?
   bio                String?
   disabled           DateTime?
+  language           String    @default("hr")
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   roleId             String
