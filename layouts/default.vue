@@ -55,11 +55,20 @@
                   @click="toggleProfileMenu"
                   class="flex items-center focus:outline-none profile-dropdown"
                 >
-                  <img
-                    :src="userAvatar"
-                    alt="User Avatar"
-                    class="h-8 w-8 rounded-full object-cover border-2 border-teal-400"
-                  />
+                  <template v-if="avatarUrl">
+                    <img
+                      :src="avatarUrl"
+                      alt="User Avatar"
+                      class="h-8 w-8 rounded-full object-cover border-2 border-teal-400"
+                    />
+                  </template>
+                  <template v-else>
+                    <div
+                      class="h-8 w-8 rounded-full border-2 border-teal-400 bg-teal-500 flex items-center justify-center text-white font-medium text-sm"
+                    >
+                      {{ getUserInitials }}
+                    </div>
+                  </template>
                 </button>
 
                 <div
@@ -214,7 +223,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
@@ -223,9 +232,31 @@ const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const isAdmin = computed(() => authStore.isAdmin);
 const userName = computed(() => authStore.user?.username || "");
-const userAvatar = computed(
-  () => authStore.user?.avatar || "https://i.pravatar.cc/150?img=30"
-);
+
+// Dohvati inicijale korisnika
+const getUserInitials = computed(() => {
+  if (!authStore.user) return "";
+
+  const firstName = authStore.user.firstName || "";
+  const lastName = authStore.user.lastName || "";
+
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  } else if (firstName) {
+    return firstName[0].toUpperCase();
+  } else if (lastName) {
+    return lastName[0].toUpperCase();
+  } else if (authStore.user.username) {
+    return authStore.user.username[0].toUpperCase();
+  }
+
+  return "U";
+});
+
+// Dohvati avatar URL
+const avatarUrl = ref<string | null>(null);
+const defaultAvatar = "https://i.pravatar.cc/150?img=30";
+const userAvatar = computed(() => avatarUrl.value || defaultAvatar);
 
 const profileMenuOpen = ref(false);
 const mobileMenuOpen = ref(false);
@@ -233,6 +264,18 @@ const isScrollingDown = ref(false);
 const atTop = ref(true);
 const header = ref<HTMLElement | null>(null);
 const lastScrollY = ref(0);
+
+// Dohvat avatara korisnika iz S3 bucketa
+async function fetchAvatarUrl() {
+  if (!authStore.user) return;
+
+  try {
+    avatarUrl.value = await authStore.getAvatarUrl(authStore.user.id);
+    console.log("navbar avatarUrl", avatarUrl.value);
+  } catch (err) {
+    console.error("Error fetching navbar avatar:", err);
+  }
+}
 
 function toggleProfileMenu() {
   profileMenuOpen.value = !profileMenuOpen.value;
@@ -280,7 +323,22 @@ onMounted(() => {
 
   // Add click event listener for closing dropdowns
   window.addEventListener("click", handleOutsideClick);
+
+  // Dohvati avatar URL kad je komponenta montirana
+  if (isLoggedIn.value) {
+    fetchAvatarUrl();
+  }
 });
+
+// Prati promjene korisnika kako bi osvježili avatar
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser) {
+      fetchAvatarUrl();
+    }
+  }
+);
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);

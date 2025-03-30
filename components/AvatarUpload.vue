@@ -8,12 +8,20 @@
         class="w-32 h-32 rounded-full object-cover border-4 border-teal-400"
         alt="Avatar"
       />
-      <img
-        v-else
-        :src="currentAvatarUrl || defaultAvatarUrl"
-        class="w-32 h-32 rounded-full object-cover border-4 border-teal-400"
-        alt="Avatar"
-      />
+      <template v-else-if="currentAvatarUrl">
+        <img
+          :src="currentAvatarUrl"
+          class="w-32 h-32 rounded-full object-cover border-4 border-teal-400"
+          alt="Avatar"
+        />
+      </template>
+      <template v-else>
+        <div
+          class="w-32 h-32 rounded-full border-4 border-teal-400 bg-teal-500 flex items-center justify-center text-white font-bold text-2xl"
+        >
+          {{ getUserInitials }}
+        </div>
+      </template>
 
       <!-- Overlay s ikonom za promjenu -->
       <div
@@ -73,9 +81,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { useAuthStore } from "~/stores/auth";
-import { toast } from "~/components/ui/toast/use-toast";
+import { ref, onMounted, watch, computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { toast } from "@/components/ui/toast/use-toast";
 
 const props = defineProps<{
   userId: string;
@@ -86,7 +94,27 @@ const isUploading = ref(false);
 const error = ref("");
 const previewSrc = ref("");
 const currentAvatarUrl = ref<string | null>(null);
-const defaultAvatarUrl = "https://i.pravatar.cc/150?img=30";
+
+// Dohvati inicijale korisnika iz auth store-a
+const getUserInitials = computed(() => {
+  const user = authStore.user;
+  if (!user) return "";
+
+  const firstName = user.firstName || "";
+  const lastName = user.lastName || "";
+
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  } else if (firstName) {
+    return firstName[0].toUpperCase();
+  } else if (lastName) {
+    return lastName[0].toUpperCase();
+  } else if (user.username) {
+    return user.username[0].toUpperCase();
+  }
+
+  return "U";
+});
 
 // Dohvati URL avatara korisnika
 async function fetchAvatarUrl() {
@@ -109,8 +137,10 @@ async function handleFileChange(event: Event) {
 
   const file = files[0];
 
+  const supportedTypes = ["image/png", "image/jpeg", "image/jpg"];
+
   // Provjeri je li datoteka slika
-  if (!file.type.startsWith("image/")) {
+  if (!supportedTypes.includes(file.type)) {
     error.value = "Možete prenijeti samo slike";
     return;
   }

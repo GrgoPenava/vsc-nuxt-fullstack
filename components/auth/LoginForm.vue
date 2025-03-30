@@ -2,6 +2,8 @@
 import { z } from "zod";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "@/components/ui/toast/use-toast";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const router = useRouter();

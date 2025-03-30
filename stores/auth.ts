@@ -174,11 +174,14 @@ export const useAuthStore = defineStore("auth", {
       this.setError(null);
 
       try {
-        const response = await $fetch("/api/users/updateProfile", {
-          method: "PUT",
-          body: profileData,
-          headers: this.getAuthHeaders,
-        });
+        const response = await $fetch<{ user: User }>(
+          "/api/users/updateProfile",
+          {
+            method: "PUT",
+            body: profileData,
+            headers: this.getAuthHeaders,
+          }
+        );
 
         // Ažuriraj korisnika u storu
         if (response.user) {
@@ -230,7 +233,10 @@ export const useAuthStore = defineStore("auth", {
     async getAvatarUrl(userId: string) {
       try {
         const response = await $fetch<{ avatarUrl: string | null }>(
-          `/api/users/avatar?userId=${userId}`
+          `/api/users/avatar?userId=${userId}`,
+          {
+            headers: this.getAuthHeaders,
+          }
         );
         return response.avatarUrl || null;
       } catch (error) {

@@ -162,17 +162,54 @@ export async function uploadFile(
 }
 
 /**
- * Vraća URL za preuzimanje slike iz S3 bucketa
+ * Provjerava postoji li datoteka u S3 bucketu
  * @param key Ključ (putanja) datoteke u bucketu
- * @returns URL za preuzimanje datoteke
+ * @returns boolean Vraća true ako datoteka postoji, inače false
  */
-export async function getFileUrl(key: string): Promise<string> {
+export async function fileExists(key: string): Promise<boolean> {
   const params = {
     Bucket: bucketName,
     Key: key,
   };
 
   try {
+    console.log(
+      `Provjeravanje postojanja datoteke ${key} u bucketu ${bucketName}`
+    );
+    await s3Client.send(new GetObjectCommand(params));
+    console.log(`Datoteka ${key} postoji u bucketu`);
+    return true;
+  } catch (error: any) {
+    // Ako datoteka ne postoji, S3 vraća grešku NoSuchKey
+    if (error.name === "NoSuchKey" || error.$metadata?.httpStatusCode === 404) {
+      console.log(`Datoteka ${key} ne postoji u bucketu`);
+      return false;
+    }
+    // Ako je neka druga greška, logiraj i proslijedi
+    console.error(`Greška pri provjeri postojanja datoteke ${key}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Vraća URL za preuzimanje slike iz S3 bucketa
+ * @param key Ključ (putanja) datoteke u bucketu
+ * @returns URL za preuzimanje datoteke ili null ako datoteka ne postoji
+ */
+export async function getFileUrl(key: string): Promise<string | null> {
+  try {
+    // Prvo provjeri postoji li datoteka
+    const exists = await fileExists(key);
+    if (!exists) {
+      console.log(`Datoteka ${key} ne postoji, vraćam null umjesto URL-a`);
+      return null;
+    }
+
+    const params = {
+      Bucket: bucketName,
+      Key: key,
+    };
+
     console.log(
       `Generiranje presigned URL-a za ${key} u bucketu ${bucketName}`
     );
@@ -183,7 +220,7 @@ export async function getFileUrl(key: string): Promise<string> {
     return url;
   } catch (error) {
     console.error("Greška pri generiranju presigned URL-a:", error);
-    throw error;
+    return null; // Vrati null umjesto bacanja greške
   }
 }
 

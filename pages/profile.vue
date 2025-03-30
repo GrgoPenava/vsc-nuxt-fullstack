@@ -18,11 +18,20 @@
           <div class="flex flex-col md:flex-row md:items-end -mt-16 mb-4">
             <!-- Avatar korisnika -->
             <div class="relative">
-              <img
-                :src="avatarUrl || defaultAvatar"
-                :alt="user.username"
-                class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"
-              />
+              <template v-if="avatarUrl">
+                <img
+                  :src="avatarUrl"
+                  :alt="user.username"
+                  class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"
+                />
+              </template>
+              <template v-else>
+                <div
+                  class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 bg-teal-500 flex items-center justify-center text-white font-bold text-4xl"
+                >
+                  {{ getUserInitials(user) }}
+                </div>
+              </template>
 
               <!-- Badge za verifikaciju -->
               <div
@@ -141,11 +150,33 @@ const user = computed(() => authStore.user);
 const isLoading = computed(() => authStore.isLoading);
 const defaultAvatar = "https://i.pravatar.cc/150?img=30";
 
+// Funkcija za dohvat inicijala korisnika
+function getUserInitials(user: any): string {
+  if (!user) return "";
+
+  const firstName = user.firstName || "";
+  const lastName = user.lastName || "";
+
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  } else if (firstName) {
+    return firstName[0].toUpperCase();
+  } else if (lastName) {
+    return lastName[0].toUpperCase();
+  } else if (user.username) {
+    return user.username[0].toUpperCase();
+  }
+
+  return "U";
+}
+
 // Dohvati avatar URL
 const avatarUrl = ref<string | null>(null);
 
 // Provjeri je li trenutni korisnik gleda svoj profil
 const isOwnProfile = computed(() => {
+  console.log("isOwnProfile");
+
   // Ako nema userId parametra u URL-u, onda je to vlastiti profil
   if (!route.params.userId) {
     return true;
@@ -162,6 +193,7 @@ async function fetchAvatarUrl() {
   try {
     const userId = route.params.userId || user.value.id;
     avatarUrl.value = await authStore.getAvatarUrl(userId as string);
+    console.log("avatarUrl", avatarUrl.value);
   } catch (err) {
     console.error("Error fetching avatar:", err);
   }

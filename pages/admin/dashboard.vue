@@ -110,11 +110,20 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <img
-                        class="h-10 w-10 rounded-full"
-                        :src="user.avatar || 'https://i.pravatar.cc/150?img=30'"
-                        :alt="user.username"
-                      />
+                      <template v-if="user.avatar">
+                        <img
+                          class="h-10 w-10 rounded-full"
+                          :src="user.avatar"
+                          :alt="user.username"
+                        />
+                      </template>
+                      <template v-else>
+                        <div
+                          class="h-10 w-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-medium"
+                        >
+                          {{ getUserInitials(user) }}
+                        </div>
+                      </template>
                     </div>
                     <div class="ml-4">
                       <div
@@ -478,12 +487,14 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { toast } from "@/components/ui/toast/use-toast";
+import { useAuthStore } from "@/stores/auth";
 
 definePageMeta({
   middleware: ["admin"],
 });
 
 const userStore = useUserStore();
+const authStore = useAuthStore();
 const isLoading = computed(() => userStore.isLoading);
 const error = computed(() => userStore.error);
 
@@ -617,8 +628,32 @@ async function fetchData() {
 
     users.value = fetchedUsers;
     roles.value = fetchedRoles;
+
+    // Dohvati avatare korisnika
+    await fetchUserAvatars();
   } catch (error) {
     console.error("Error loading data:", error);
+  }
+}
+
+// Funkcija za dohvaćanje avatara korisnika iz S3 bucketa
+async function fetchUserAvatars() {
+  try {
+    // Ažuriraj avatar URL za svakog korisnika
+    for (let i = 0; i < users.value.length; i++) {
+      const user = users.value[i];
+      if (user.avatar) {
+        const avatarUrl = await authStore.getAvatarUrl(user.id);
+        if (avatarUrl) {
+          users.value[i].avatar = avatarUrl;
+        } else {
+          // Ako avatar postoji u bazi ali ne i u S3, postavi na null
+          users.value[i].avatar = null;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Greška pri dohvatu avatara korisnika:", error);
   }
 }
 
@@ -710,5 +745,27 @@ async function updateUser() {
 // Prilagođeno za template kako bismo mogli provjeriti je li vrijednost string ili broj
 function isNumber(value: any): boolean {
   return typeof value === "number";
+}
+
+// Funkcija za dohvat inicijala korisnika
+function getUserInitials(user: {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+}): string {
+  const firstName = user.firstName || "";
+  const lastName = user.lastName || "";
+
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  } else if (firstName) {
+    return firstName[0].toUpperCase();
+  } else if (lastName) {
+    return lastName[0].toUpperCase();
+  } else if (user.username) {
+    return user.username[0].toUpperCase();
+  }
+
+  return "U";
 }
 </script>

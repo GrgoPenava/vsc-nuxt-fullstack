@@ -21,8 +21,6 @@ export default defineEventHandler(async (event: H3Event) => {
       select: { avatar: true },
     });
 
-    console.log("user", user);
-
     if (!user) {
       throw createError({
         statusCode: 404,
@@ -30,7 +28,8 @@ export default defineEventHandler(async (event: H3Event) => {
       });
     }
 
-    // Ako korisnik nema avatar, vrati default
+    // Ako korisnik nema avatar u bazi, vrati null
+    console.log("user -", user);
     if (!user.avatar) {
       return {
         avatarUrl: null,
@@ -38,12 +37,31 @@ export default defineEventHandler(async (event: H3Event) => {
     }
 
     // Generiraj signed URL za S3 objekt
-    const signedUrl = await getFileUrl("/avatars/" + user.avatar);
+    const signedUrl = await getFileUrl(user.avatar);
+
+    // Ako je signedUrl null, znači da datoteka ne postoji u S3 bucketu
+    if (signedUrl === null) {
+      console.log(
+        `Avatar ${user.avatar} postoji u bazi, ali ne i u S3 bucketu`
+      );
+
+      // Opcija: Ažuriraj korisnički profil da nema avatar u bazi
+      // await prisma.user.update({
+      //   where: { id: userId },
+      //   data: { avatar: null },
+      // });
+      // console.log(`Avatar za korisnika ${userId} postavljen na null u bazi`);
+
+      return {
+        avatarUrl: null,
+      };
+    }
 
     return {
       avatarUrl: signedUrl,
     };
   } catch (error: any) {
+    console.error("Greška prilikom dohvata avatara:", error);
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage:
