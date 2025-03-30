@@ -1,0 +1,45 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.777.0",
+    "@nuxtjs/tailwindcss": "^6.13.2",
+    "@pinia/nuxt": "^0.10.1",
+    "@prisma/client": "^6.5.0",
+    "bcrypt": "^5.1.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-vue-next": "^0.485.0",
+    "minio": "^8.0.5",
+    "multer": "^1.4.5-lts.2",
+    "nuxt": "^3.16.1",
+    "pinia": "^3.0.1",
+    "prisma": "^6.5.0",
+    "reka-ui": "^2.1.1",
+    "tailwind-merge": "^3.0.2",
+    "tailwindcss-animate": "^1.0.7",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/minio": "^7.1.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.13.14",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "shadcn-nuxt": "^1.0.3",
+    "tailwindcss": "^3.4.17"
+  }
+}

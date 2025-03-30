@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  username           String    @unique
+  email              String    @unique
+  firstName          String
+  lastName           String
+  password           String
+  avatar             String?
+  verified           Boolean   @default(false)
+  verificationToken  String?
+  resetPasswordToken String?
+  bio                String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  roleId             String
+  comments           Comment[]
+  dislikes           Dislike[]
+  likes              Like[]
+  profiles           Profile[]
+  role               Role      @relation(fields: [roleId], references: [id])
+
+  @@index([roleId])
+}
+
+model Profile {
+  id              String       @id @default(uuid())
+  name            String
+  description     String?
+  extensions      Json?
+  settings        Json?
+  snippets        Json?
+  theme           String?
+  filePath        String?
+  fileName        String?
+  fileSize        Int?
+  previewImageUrl String?
+  likeCount       Int          @default(0)
+  dislikeCount    Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  userId          String
+  comments        Comment[]
+  dislikes        Dislike[]
+  likes           Like[]
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileTags     ProfileTag[]
+
+  @@index([userId])
+  @@index([name])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+  @@index([userId])
+  @@index([profileId])
+}
+
+model Dislike {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+  @@index([userId])
+  @@index([profileId])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String
+  profileId String
+  parentId  String?
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentToComment")
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([profileId])
+  @@index([parentId])
+}
+
+model Tag {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  profiles  ProfileTag[]
+}
+
+model ProfileTag {
+  id         String   @id @default(uuid())
+  profileId  String
+  tagId      String
+  assignedAt DateTime @default(now())
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, tagId])
+  @@index([profileId])
+  @@index([tagId])
+}
