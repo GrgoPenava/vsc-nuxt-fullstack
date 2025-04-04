@@ -42,7 +42,7 @@ model User {
 }
 
 model Profile {
-  id              String       @id @default(uuid())
+  id              String            @id @default(uuid())
   name            String
   description     String?
   extensions      Json?
@@ -53,16 +53,19 @@ model Profile {
   fileName        String?
   fileSize        Int?
   previewImageUrl String?
-  likeCount       Int          @default(0)
-  dislikeCount    Int          @default(0)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  images          String[]
+  jsonContent     String?
+  likeCount       Int               @default(0)
+  dislikeCount    Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   userId          String
   comments        Comment[]
   dislikes        Dislike[]
   likes           Like[]
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   profileTags     ProfileTag[]
+  profileExtensions ProfileExtension[]
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([name])
@@ -133,4 +136,29 @@ model ProfileTag {
   @@unique([profileId, tagId])
   @@index([profileId])
   @@index([tagId])
+}
+
+model Extension {
+  id           String             @id @default(uuid())
+  extensionId  String             @unique
+  name         String
+  publisher    String
+  description  String?
+  link         String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  profiles     ProfileExtension[]
+}
+
+model ProfileExtension {
+  id          String    @id @default(uuid())
+  profileId   String
+  extensionId String
+  assignedAt  DateTime  @default(now())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  extension   Extension @relation(fields: [extensionId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, extensionId])
+  @@index([profileId])
+  @@index([extensionId])
 }

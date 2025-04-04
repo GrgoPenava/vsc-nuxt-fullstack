@@ -49,7 +49,11 @@ import { useTranslation } from "@/composables/useTranslation";
 import { toast } from "@/components/ui/toast/use-toast";
 
 const authStore = useAuthStore();
-const { currentLanguage, getTranslation } = useTranslation();
+const {
+  currentLanguage,
+  getTranslation,
+  changeLanguage: setLanguage,
+} = useTranslation();
 
 const isOpen = ref(false);
 const isLoading = ref(false);
@@ -71,7 +75,7 @@ async function changeLanguage(lang: string) {
   isLoading.value = true;
 
   try {
-    const result = await authStore.updateLanguage(lang);
+    const result = await setLanguage(lang);
 
     if (result.success) {
       toast({

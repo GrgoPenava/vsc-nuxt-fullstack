@@ -37,6 +37,12 @@
                 >{{ t("common.explore") }}</NuxtLink
               >
               <NuxtLink
+                to="/profiles"
+                active-class="text-teal-400"
+                class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
+                >{{ t("common.profiles") }}</NuxtLink
+              >
+              <NuxtLink
                 v-if="isAdmin"
                 to="/admin/dashboard"
                 active-class="text-teal-400"
@@ -170,6 +176,11 @@
             to="/explore"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
             >{{ t("common.explore") }}</NuxtLink
+          >
+          <NuxtLink
+            to="/profiles"
+            class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
+            >{{ t("common.profiles") }}</NuxtLink
           >
           <NuxtLink
             v-if="isAdmin"

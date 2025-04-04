@@ -124,12 +124,14 @@ initBucket().catch((err) => {
  * @param fileName Ime datoteke
  * @param fileBuffer Buffer s podacima datoteke
  * @param contentType MIME tip datoteke
+ * @param folder Folder unutar bucketa (npr. 'avatars', 'profiles')
  * @returns URL putanja do slike
  */
 export async function uploadFile(
   fileName: string,
   fileBuffer: Buffer,
-  contentType: string
+  contentType: string,
+  folder: string = "avatars"
 ): Promise<string> {
   // Osiguraj da bucket postoji
   const bucketExists = await initBucket();
@@ -139,7 +141,7 @@ export async function uploadFile(
     );
   }
 
-  const key = `avatars/${Date.now()}-${fileName}`;
+  const key = `${folder}/${Date.now()}-${fileName}`;
 
   const params = {
     Bucket: bucketName,
@@ -150,7 +152,7 @@ export async function uploadFile(
 
   try {
     console.log(
-      `Pokušavam upload datoteke ${fileName} (veličina: ${fileBuffer.length} bytes) u bucket ${bucketName}`
+      `Pokušavam upload datoteke ${fileName} (veličina: ${fileBuffer.length} bytes) u bucket ${bucketName}/${folder}`
     );
     const result = await s3Client.send(new PutObjectCommand(params));
     console.log(`Datoteka uspješno uploadana s rezultatom:`, result);

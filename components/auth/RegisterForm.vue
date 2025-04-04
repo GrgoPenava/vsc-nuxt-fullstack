@@ -4,9 +4,11 @@ import { useAuthStore } from "@/stores/auth";
 import { toast } from "@/components/ui/toast/use-toast";
 import { ref, computed, reactive } from "vue";
 import { useRouter } from "vue-router";
+import { useTranslation } from "@/composables/useTranslation";
 
 const authStore = useAuthStore();
 const router = useRouter();
+const { t } = useTranslation();
 
 // Form state
 const formData = reactive({
@@ -27,20 +29,15 @@ const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])(.{6,})$/;
 // Validacija forme
 const registerSchema = z
   .object({
-    username: z.string().min(3, "Korisničko ime mora imati barem 3 znaka"),
-    email: z.string().email("Unesite važeću email adresu"),
-    firstName: z.string().min(1, "Ime je obavezno"),
-    lastName: z.string().min(1, "Prezime je obavezno"),
-    password: z
-      .string()
-      .regex(
-        passwordRegex,
-        "Lozinka mora imati najmanje 6 znakova, jedno veliko slovo i jedan poseban znak"
-      ),
+    username: z.string().min(3, t("errors.minLength").replace("{min}", "3")),
+    email: z.string().email(t("errors.invalidEmail")),
+    firstName: z.string().min(1, t("errors.required")),
+    lastName: z.string().min(1, t("errors.required")),
+    password: z.string().regex(passwordRegex, t("auth.passwordRules")),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Lozinke se ne podudaraju",
+    message: t("errors.passwordsNoMatch"),
     path: ["confirmPassword"],
   });
 
@@ -66,19 +63,17 @@ const handleRegister = async () => {
     if (result.success) {
       // Uspješna registracija
       toast({
-        title: "Uspješna registracija",
-        description: "Račun je uspješno kreiran. Možete se prijaviti.",
+        title: t("auth.registerSuccess"),
+        description: t("auth.registerSuccessMessage"),
         variant: "default",
       });
       router.push("/login");
     } else {
       // Neuspješna registracija
-      formError.value =
-        result.error || "Došlo je do greške prilikom registracije";
+      formError.value = result.error || t("errors.register");
       toast({
-        title: "Greška prilikom registracije",
-        description:
-          formError.value || "Došlo je do greške prilikom registracije",
+        title: t("errors.register"),
+        description: formError.value || t("errors.register"),
         variant: "destructive",
       });
     }
@@ -87,16 +82,16 @@ const handleRegister = async () => {
       // Greška validacije
       formError.value = error.errors[0].message;
       toast({
-        title: "Pogrešan unos",
-        description: formError.value || "Pogrešan unos podataka",
+        title: t("errors.validationFailed"),
+        description: formError.value || t("errors.validationFailed"),
         variant: "destructive",
       });
     } else {
       // Ostale greške
-      formError.value = "Došlo je do greške prilikom registracije";
+      formError.value = t("errors.register");
       toast({
-        title: "Greška",
-        description: "Došlo je do greške prilikom registracije",
+        title: t("errors.general"),
+        description: t("errors.register"),
         variant: "destructive",
       });
     }
@@ -107,67 +102,73 @@ const handleRegister = async () => {
 <template>
   <div class="w-full max-w-lg mx-auto p-6 space-y-6">
     <div class="text-center">
-      <h1 class="text-2xl font-bold">Registracija</h1>
-      <p class="text-muted-foreground mt-2">Kreirajte novi korisnički račun</p>
+      <h1 class="text-2xl font-bold">{{ t("auth.registerTitle") }}</h1>
+      <p class="text-muted-foreground mt-2">{{ t("auth.registerSubtitle") }}</p>
     </div>
 
     <form @submit.prevent="handleRegister" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="space-y-2">
-          <label for="firstName" class="block text-sm font-medium">Ime</label>
+          <label for="firstName" class="block text-sm font-medium">{{
+            t("auth.firstName")
+          }}</label>
           <input
             id="firstName"
             v-model="formData.firstName"
             type="text"
             class="w-full px-3 py-2 border rounded-md"
-            placeholder="Vaše ime"
+            :placeholder="t('auth.firstNamePlaceholder')"
             :disabled="isSubmitting"
           />
         </div>
 
         <div class="space-y-2">
-          <label for="lastName" class="block text-sm font-medium"
-            >Prezime</label
-          >
+          <label for="lastName" class="block text-sm font-medium">{{
+            t("auth.lastName")
+          }}</label>
           <input
             id="lastName"
             v-model="formData.lastName"
             type="text"
             class="w-full px-3 py-2 border rounded-md"
-            placeholder="Vaše prezime"
+            :placeholder="t('auth.lastNamePlaceholder')"
             :disabled="isSubmitting"
           />
         </div>
       </div>
 
       <div class="space-y-2">
-        <label for="username" class="block text-sm font-medium"
-          >Korisničko ime</label
-        >
+        <label for="username" class="block text-sm font-medium">{{
+          t("auth.username")
+        }}</label>
         <input
           id="username"
           v-model="formData.username"
           type="text"
           class="w-full px-3 py-2 border rounded-md"
-          placeholder="korisnicko_ime"
+          :placeholder="t('auth.usernamePlaceholder')"
           :disabled="isSubmitting"
         />
       </div>
 
       <div class="space-y-2">
-        <label for="email" class="block text-sm font-medium">Email</label>
+        <label for="email" class="block text-sm font-medium">{{
+          t("auth.email")
+        }}</label>
         <input
           id="email"
           v-model="formData.email"
           type="email"
           class="w-full px-3 py-2 border rounded-md"
-          placeholder="vas@email.com"
+          :placeholder="t('auth.emailPlaceholder')"
           :disabled="isSubmitting"
         />
       </div>
 
       <div class="space-y-2">
-        <label for="password" class="block text-sm font-medium">Lozinka</label>
+        <label for="password" class="block text-sm font-medium">{{
+          t("auth.password")
+        }}</label>
         <input
           id="password"
           v-model="formData.password"
@@ -177,15 +178,14 @@ const handleRegister = async () => {
           :disabled="isSubmitting"
         />
         <p class="text-xs text-muted-foreground mt-1">
-          Lozinka mora sadržavati najmanje 6 znakova, jedno veliko slovo i jedan
-          poseban znak.
+          {{ t("auth.passwordRules") }}
         </p>
       </div>
 
       <div class="space-y-2">
-        <label for="confirmPassword" class="block text-sm font-medium"
-          >Potvrda lozinke</label
-        >
+        <label for="confirmPassword" class="block text-sm font-medium">{{
+          t("auth.confirmPassword")
+        }}</label>
         <input
           id="confirmPassword"
           v-model="formData.confirmPassword"
@@ -205,15 +205,15 @@ const handleRegister = async () => {
         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
         :disabled="isSubmitting"
       >
-        <template v-if="isSubmitting"> Učitavanje... </template>
-        <template v-else> Registriraj se </template>
+        <template v-if="isSubmitting"> {{ t("auth.registering") }} </template>
+        <template v-else> {{ t("auth.register") }} </template>
       </button>
     </form>
 
     <div class="text-center text-sm">
-      Već imate račun?
+      {{ t("auth.haveAccount") }}
       <NuxtLink to="/login" class="text-blue-600 hover:underline">
-        Prijavite se
+        {{ t("auth.login") }}
       </NuxtLink>
     </div>
   </div>
