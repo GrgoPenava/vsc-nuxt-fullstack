@@ -8,14 +8,14 @@
     <!-- Error state -->
     <div v-else-if="error" class="text-center py-12">
       <div class="text-red-500 text-2xl mb-4">
-        <i class="fas fa-exclamation-circle mr-2"></i>
+        <font-awesome-icon icon="fas fa-exclamation-circle" class="mr-2" />
         {{ error }}
       </div>
       <NuxtLink
         to="/profiles"
         class="inline-flex items-center text-teal-500 hover:text-teal-600"
       >
-        <i class="fas fa-arrow-left mr-2"></i>
+        <font-awesome-icon icon="fas fa-arrow-left" class="mr-2" />
         {{ t("common.backToProfiles") }}
       </NuxtLink>
     </div>
@@ -34,10 +34,19 @@
               {{ profile.name }}
             </h1>
             <div class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              <span>{{ t("profiles.createdBy") }}</span>
-              <span class="font-medium text-gray-700 dark:text-gray-300">{{
-                profile.user?.username
-              }}</span>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ t("profiles.createdBy") }}
+              </p>
+              <p
+                class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl"
+              >
+                <NuxtLink
+                  :to="`/users/${profile.user?.id}`"
+                  class="hover:text-teal-500 transition-colors"
+                >
+                  {{ profile.user?.username }}
+                </NuxtLink>
+              </p>
               <span class="mx-2">•</span>
               {{ formatDate(profile.createdAt) }}
             </div>
@@ -53,22 +62,58 @@
                 class="flex items-center py-2 px-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
                 :class="{ 'bg-gray-100 dark:bg-gray-800': liked }"
                 @click="toggleLike"
+                :disabled="
+                  !isLoggedIn ||
+                  isPerformingLikeAction ||
+                  isPerformingDislikeAction
+                "
+                :title="
+                  !isLoggedIn
+                    ? t('profiles.loginRequired')
+                    : isPerformingLikeAction
+                    ? t('common.processing')
+                    : ''
+                "
               >
-                <i
-                  class="fas fa-thumbs-up mr-2"
+                <div
+                  v-if="isPerformingLikeAction"
+                  class="w-5 h-5 mr-2 spinner-small"
+                ></div>
+                <font-awesome-icon
+                  v-else
+                  icon="far fa-thumbs-up"
+                  class="w-5 h-5 mr-2"
                   :class="{ 'text-teal-500': liked }"
-                ></i>
+                />
                 {{ profile.likeCount }}
               </button>
               <button
                 class="flex items-center py-2 px-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
                 :class="{ 'bg-gray-100 dark:bg-gray-800': disliked }"
                 @click="toggleDislike"
+                :disabled="
+                  !isLoggedIn ||
+                  isPerformingLikeAction ||
+                  isPerformingDislikeAction
+                "
+                :title="
+                  !isLoggedIn
+                    ? t('profiles.loginRequired')
+                    : isPerformingDislikeAction
+                    ? t('common.processing')
+                    : ''
+                "
               >
-                <i
-                  class="fas fa-thumbs-down mr-2"
+                <div
+                  v-if="isPerformingDislikeAction"
+                  class="w-5 h-5 mr-2 spinner-small"
+                ></div>
+                <font-awesome-icon
+                  v-else
+                  icon="far fa-thumbs-down"
+                  class="w-5 h-5 mr-2"
                   :class="{ 'text-red-500': disliked }"
-                ></i>
+                />
                 {{ profile.dislikeCount }}
               </button>
             </div>
@@ -114,7 +159,11 @@
               class="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label="Previous image"
             >
-              <i class="fas fa-chevron-left"></i>
+              <font-awesome-icon
+                icon="far fa-circle-left"
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                alt="Previous"
+              />
             </button>
             <button
               v-if="
@@ -125,7 +174,11 @@
               class="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label="Next image"
             >
-              <i class="fas fa-chevron-right"></i>
+              <font-awesome-icon
+                icon="far fa-circle-right"
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                alt="Next"
+              />
             </button>
 
             <!-- Dots indicator -->
@@ -163,7 +216,10 @@
               download
               class="inline-flex items-center px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors"
             >
-              <i class="fas fa-download mr-2"></i>
+              <font-awesome-icon
+                icon="fas fa-download"
+                class="mr-2 text-white"
+              />
               {{ t("profiles.download") }} {{ profile.fileName }}
               <span class="ml-2 text-sm text-teal-200">
                 ({{ formatFileSize(profile.fileSize) }})
@@ -173,14 +229,17 @@
               @click="copyProfileContent"
               class="inline-flex items-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors"
             >
-              <i class="fas fa-copy mr-2"></i>
+              <font-awesome-icon icon="fas fa-copy" class="mr-2 text-white" />
               {{ t("profiles.copy") }}
             </button>
             <button
               @click="showFilePreview"
               class="inline-flex items-center px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
             >
-              <i class="fas fa-file-alt mr-2"></i>
+              <font-awesome-icon
+                icon="fas fa-file-alt"
+                class="mr-2 text-white"
+              />
               {{ t("profiles.preview") }}
             </button>
           </div>
@@ -241,7 +300,11 @@
                   rel="noopener noreferrer"
                   class="block mt-2 text-xs text-teal-500 hover:text-teal-600"
                 >
-                  <i class="fas fa-external-link-alt mr-1"></i> Marketplace
+                  <font-awesome-icon
+                    icon="fas fa-external-link-alt"
+                    class="mr-1 text-teal-500"
+                  />
+                  Marketplace
                 </a>
               </div>
             </div>
@@ -295,7 +358,7 @@
                     v-else
                     class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs"
                   >
-                    {{ getUserInitials(comment.user) }}
+                    <font-awesome-icon icon="fas fa-user" />
                   </div>
                 </div>
                 <div class="flex-1">
@@ -303,7 +366,12 @@
                     <span
                       class="font-medium text-gray-900 dark:text-white mr-2"
                     >
-                      {{ comment.user?.username }}
+                      <NuxtLink
+                        :to="`/users/${comment.user?.id}`"
+                        class="hover:text-teal-500 transition-colors"
+                      >
+                        {{ comment.user?.username }}
+                      </NuxtLink>
                     </span>
                     <span class="text-xs text-gray-500 dark:text-gray-400">
                       {{ formatDate(comment.createdAt) }}
@@ -344,7 +412,11 @@
           class="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label="Previous image"
         >
-          <i class="fas fa-chevron-left text-xl"></i>
+          <font-awesome-icon
+            icon="far fa-circle-left"
+            class="w-8 h-8 text-gray-800 dark:text-white"
+            alt="Previous"
+          />
         </button>
         <button
           v-if="modalImageIndex < profile.imageUrls.length - 1"
@@ -352,14 +424,22 @@
           class="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label="Next image"
         >
-          <i class="fas fa-chevron-right text-xl"></i>
+          <font-awesome-icon
+            icon="far fa-circle-right"
+            class="w-8 h-8 text-gray-800 dark:text-white"
+            alt="Next"
+          />
         </button>
       </div>
       <button
-        class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white text-gray-900 rounded-full shadow-md hover:bg-gray-200"
+        class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-full shadow-md hover:bg-gray-200 dark:hover:bg-gray-700"
         @click.stop="selectedImage = null"
       >
-        <i class="fas fa-times"></i>
+        <font-awesome-icon
+          icon="far fa-circle-xmark"
+          class="w-6 h-6 text-gray-900 dark:text-white"
+          alt="Close"
+        />
       </button>
     </div>
 
@@ -382,7 +462,11 @@
             class="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
             @click="showFileContent = false"
           >
-            <i class="fas fa-times"></i>
+            <font-awesome-icon
+              icon="far fa-circle-xmark"
+              class="w-5 h-5 text-gray-500 dark:text-gray-400"
+              alt="Close"
+            />
           </button>
         </div>
         <div class="p-4 overflow-auto max-h-[80vh]">
@@ -429,6 +513,10 @@ const showFileContent = ref(false);
 const currentSlide = ref(0);
 const modalImageIndex = ref(0);
 
+// Dodaj referentnu varijablu za stanje učitavanja like/dislike operacija
+const isPerformingLikeAction = ref(false);
+const isPerformingDislikeAction = ref(false);
+
 // Dohvati ID profila iz rute
 const profileId = computed(() => route.params.id as string);
 
@@ -460,12 +548,7 @@ async function loadProfile() {
     error.value = null;
 
     const { data, error: fetchError } = await useFetch(
-      `/api/profiles/${profileId.value}`,
-      {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      }
+      `/api/public/profiles/${profileId.value}`
     );
 
     if (fetchError.value) {
@@ -502,9 +585,28 @@ async function loadProfile() {
 }
 
 async function toggleLike() {
-  if (!isLoggedIn.value) return;
+  if (
+    !isLoggedIn.value ||
+    isPerformingLikeAction.value ||
+    isPerformingDislikeAction.value
+  ) {
+    if (!isLoggedIn.value) {
+      toast.toast({
+        title: t("common.error"),
+        description: t("profiles.loginRequired"),
+        variant: "destructive",
+      });
+    }
+    return;
+  }
 
   try {
+    isPerformingLikeAction.value = true;
+
+    // Spremi trenutno stanje lokalno prije API poziva
+    const wasLiked = liked.value;
+    const wasDisliked = disliked.value;
+
     const { data } = await useFetch(`/api/profiles/${profileId.value}/like`, {
       method: "POST",
       headers: {
@@ -515,33 +617,62 @@ async function toggleLike() {
     if (data.value) {
       const { liked: isLiked, disliked: isDisliked } = data.value;
 
-      // Ažuriraj stanje lajkova/dislajkova
-      if (liked.value && !isLiked) {
-        // Uklonjen lajk
-        profile.value.likeCount--;
-      } else if (!liked.value && isLiked) {
-        // Dodan lajk
+      // Ažuriraj brojače prema promjeni stanja
+      if (wasLiked && !isLiked) {
+        // Lajk je uklonjen
+        profile.value.likeCount = Math.max(0, profile.value.likeCount - 1);
+      } else if (!wasLiked && isLiked) {
+        // Dodan je lajk
         profile.value.likeCount++;
       }
 
+      // Ako je prethodno imao dislike koji je sada uklonjen
+      if (wasDisliked && !isDisliked) {
+        profile.value.dislikeCount = Math.max(
+          0,
+          profile.value.dislikeCount - 1
+        );
+      }
+
+      // Postavi lokalno stanje
       liked.value = isLiked;
       disliked.value = isDisliked;
-
-      // Ako je uklonjen dislajk
-      if (disliked.value && !isDisliked) {
-        profile.value.dislikeCount--;
-        disliked.value = false;
-      }
     }
   } catch (err) {
     console.error("Error toggling like:", err);
+    toast.toast({
+      title: t("common.error"),
+      description: t("common.somethingWentWrong"),
+      variant: "destructive",
+    });
+  } finally {
+    isPerformingLikeAction.value = false;
   }
 }
 
 async function toggleDislike() {
-  if (!isLoggedIn.value) return;
+  if (
+    !isLoggedIn.value ||
+    isPerformingLikeAction.value ||
+    isPerformingDislikeAction.value
+  ) {
+    if (!isLoggedIn.value) {
+      toast.toast({
+        title: t("common.error"),
+        description: t("profiles.loginRequired"),
+        variant: "destructive",
+      });
+    }
+    return;
+  }
 
   try {
+    isPerformingDislikeAction.value = true;
+
+    // Spremi trenutno stanje lokalno prije API poziva
+    const wasLiked = liked.value;
+    const wasDisliked = disliked.value;
+
     const { data } = await useFetch(
       `/api/profiles/${profileId.value}/dislike`,
       {
@@ -555,26 +686,36 @@ async function toggleDislike() {
     if (data.value) {
       const { liked: isLiked, disliked: isDisliked } = data.value;
 
-      // Ažuriraj stanje lajkova/dislajkova
-      if (disliked.value && !isDisliked) {
-        // Uklonjen dislajk
-        profile.value.dislikeCount--;
-      } else if (!disliked.value && isDisliked) {
-        // Dodan dislajk
+      // Ažuriraj brojače prema promjeni stanja
+      if (wasDisliked && !isDisliked) {
+        // Dislike je uklonjen
+        profile.value.dislikeCount = Math.max(
+          0,
+          profile.value.dislikeCount - 1
+        );
+      } else if (!wasDisliked && isDisliked) {
+        // Dodan je dislike
         profile.value.dislikeCount++;
       }
 
+      // Ako je prethodno imao like koji je sada uklonjen
+      if (wasLiked && !isLiked) {
+        profile.value.likeCount = Math.max(0, profile.value.likeCount - 1);
+      }
+
+      // Postavi lokalno stanje
       liked.value = isLiked;
       disliked.value = isDisliked;
-
-      // Ako je uklonjen lajk
-      if (liked.value && !isLiked) {
-        profile.value.likeCount--;
-        liked.value = false;
-      }
     }
   } catch (err) {
     console.error("Error toggling dislike:", err);
+    toast.toast({
+      title: t("common.error"),
+      description: t("common.somethingWentWrong"),
+      variant: "destructive",
+    });
+  } finally {
+    isPerformingDislikeAction.value = false;
   }
 }
 
@@ -870,5 +1011,33 @@ onMounted(() => {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* Ukloni bijele obrube oko SVG ikonica */
+.icon-no-border {
+  border: none;
+  outline: none;
+}
+
+/* Dodaj filtriranje za bojanje ikona kad su aktivne */
+.filter-teal {
+  /* color is now handled by text-teal-500 class */
+}
+
+.filter-red {
+  /* color is now handled by text-red-500 class */
+}
+
+/* Spinner za stanje učitavanja */
+.spinner-small {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 2px solid #3498db;
+  animation: spin 1s linear infinite;
+}
+
+.dark .spinner-small {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid #3498db;
 }
 </style>

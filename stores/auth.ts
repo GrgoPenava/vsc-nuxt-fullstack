@@ -328,6 +328,19 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    // Dodajemo metodu za javni dohvat URL-a avatara (bez autentifikacije)
+    async getPublicAvatarUrl(userId: string) {
+      try {
+        const response = await $fetch<{ avatarUrl: string | null }>(
+          `/api/public/users/avatar?userId=${userId}`
+        );
+        return response.avatarUrl || null;
+      } catch (error) {
+        console.error("Error fetching public avatar URL:", error);
+        return null;
+      }
+    },
+
     // Dodajem metodu za ažuriranje jezika korisnika
     async updateLanguage(language: string) {
       this.setLoading(true);

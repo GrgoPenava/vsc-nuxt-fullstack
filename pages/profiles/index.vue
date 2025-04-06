@@ -39,6 +39,7 @@
             @change="loadProfiles"
           >
             <option value="recent">{{ t("profiles.sortRecent") }}</option>
+            <option value="oldest">{{ t("profiles.sortOldest") }}</option>
             <option value="popular">{{ t("profiles.sortPopular") }}</option>
             <option value="name">{{ t("profiles.sortName") }}</option>
           </select>
@@ -89,8 +90,11 @@
               <div
                 class="flex items-center text-sm text-gray-600 dark:text-gray-400"
               >
-                <span class="mr-2">{{ profile.likeCount }}</span>
-                <i class="fas fa-heart"></i>
+                <font-awesome-icon
+                  icon="far fa-thumbs-up"
+                  class="w-5 h-5 mr-2"
+                />
+                <span>{{ profile.likeCount }}</span>
               </div>
             </div>
 
@@ -104,13 +108,13 @@
                   v-if="profile.user?.avatar"
                   :src="profile.user.avatar"
                   alt=""
-                  class="w-8 h-8 rounded-full mr-2 object-cover"
+                  class="w-8 h-8 rounded-full mr-2 object-cover border-2 border-teal-400"
                 />
                 <div
                   v-else
-                  class="w-8 h-8 rounded-full mr-2 bg-teal-500 flex items-center justify-center text-white"
+                  class="w-8 h-8 rounded-full mr-2 bg-teal-500 flex items-center justify-center text-white border-2 border-teal-400"
                 >
-                  {{ profile.user?.username?.charAt(0).toUpperCase() }}
+                  <font-awesome-icon icon="fas fa-user" />
                 </div>
                 <span class="text-sm text-gray-600 dark:text-gray-400">
                   {{ profile.user?.username }}
@@ -226,11 +230,9 @@ async function loadProfiles() {
       queryParams.append("search", searchQuery.value);
     }
 
-    const { data } = await useFetch(`/api/profiles?${queryParams.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${authStore.token}`,
-      },
-    });
+    const { data } = await useFetch(
+      `/api/public/profiles?${queryParams.toString()}`
+    );
 
     if (data.value) {
       profiles.value = data.value.profiles;

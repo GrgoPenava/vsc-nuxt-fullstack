@@ -28,7 +28,8 @@
     "today": "Danas",
     "yesterday": "Jučer",
     "days": "dana",
-    "optional": "opcionalno"
+    "optional": "opcionalno",
+    "processing": "Obrada..."
   },
   "auth": {
     "username": "Korisničko ime",
@@ -169,6 +170,7 @@
     "download": "Preuzmi",
     "noProfiles": "Nema pronađenih profila",
     "sortRecent": "Najnovije",
+    "sortOldest": "Najstarije",
     "sortPopular": "Najpopularnije",
     "sortName": "Po nazivu",
     "noImage": "Nema slike",
@@ -184,5 +186,28 @@
     "copyFailed": "Nije uspjelo kopiranje sadržaja",
     "createdBy": "Kreirao",
     "previewFailed": "Nije uspjelo učitavanje pregleda datoteke"
+  },
+  "users": {
+    "profiles": "Profili",
+    "comments": "Komentari",
+    "noProfiles": "Ovaj korisnik još nije kreirao niti jedan VSCode profil",
+    "noComments": "Ovaj korisnik još nije ostavio niti jedan komentar"
+  },
+  "home": {
+    "heroTitle": "Podijelite svoje VS Code postavke",
+    "heroSubtitle": "Otkrijte nevjerojatne postavke uređivača, ekstenzije i teme programera diljem svijeta",
+    "exploreProfiles": "Istražite profile",
+    "createAccount": "Kreirajte račun",
+    "featuredProfiles": "Najpopularniji VS Code profili",
+    "howItWorks": "Kako to funkcionira",
+    "step1Title": "Kreirajte račun",
+    "step1Description": "Registrirajte se besplatno i pridružite se našoj zajednici VS Code entuzijasta",
+    "step2Title": "Podijelite svoje postavke",
+    "step2Description": "Učitajte snimke zaslona, dodajte liste ekstenzija i opišite svoju VS Code konfiguraciju",
+    "step3Title": "Otkrijte i sudjelujte",
+    "step3Description": "Istražite postavke drugih programera, spremite favorite i ostavite komentare",
+    "comingSoon": "Uskoro",
+    "profileComingSoon": "Profil uskoro",
+    "beFirstToAdd": "Budite prvi koji će dodati svoj VS Code profil!"
   }
 }

@@ -28,7 +28,8 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "days": "days ago",
-    "optional": "optional"
+    "optional": "optional",
+    "processing": "Processing..."
   },
   "auth": {
     "username": "Username",
@@ -170,6 +171,7 @@
     "download": "Download",
     "noProfiles": "No profiles found",
     "sortRecent": "Most Recent",
+    "sortOldest": "Oldest First",
     "sortPopular": "Most Popular",
     "sortName": "By Name",
     "noImage": "No image",
@@ -185,5 +187,28 @@
     "copyFailed": "Failed to copy content",
     "createdBy": "Created by",
     "previewFailed": "Failed to load file preview"
+  },
+  "users": {
+    "profiles": "Profiles",
+    "comments": "Comments",
+    "noProfiles": "This user hasn't created any VSCode profiles yet",
+    "noComments": "This user hasn't made any comments yet"
+  },
+  "home": {
+    "heroTitle": "Share Your VS Code Setup",
+    "heroSubtitle": "Discover amazing editor setups, extensions, and themes from developers around the world",
+    "exploreProfiles": "Explore Profiles",
+    "createAccount": "Create Account",
+    "featuredProfiles": "Featured VS Code Profiles",
+    "howItWorks": "How It Works",
+    "step1Title": "Create an Account",
+    "step1Description": "Sign up for free and join our community of VS Code enthusiasts",
+    "step2Title": "Share Your Setup",
+    "step2Description": "Upload screenshots, add extension lists, and describe your VS Code configuration",
+    "step3Title": "Discover & Engage",
+    "step3Description": "Explore setups from other developers, save favorites, and leave comments",
+    "comingSoon": "Coming Soon",
+    "profileComingSoon": "Profile Coming Soon",
+    "beFirstToAdd": "Be the first to add your VS Code profile!"
   }
 }

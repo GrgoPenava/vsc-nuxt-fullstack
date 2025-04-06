@@ -19,7 +19,7 @@
         <div
           class="w-32 h-32 rounded-full border-4 border-teal-400 bg-teal-500 flex items-center justify-center text-white font-bold text-2xl"
         >
-          {{ getUserInitials }}
+          <font-awesome-icon icon="fas fa-user" class="text-2xl" />
         </div>
       </template>
 

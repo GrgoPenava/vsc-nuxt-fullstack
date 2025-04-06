@@ -29,7 +29,7 @@
                 <div
                   class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 bg-teal-500 flex items-center justify-center text-white font-bold text-4xl"
                 >
-                  {{ getUserInitials(user) }}
+                  <font-awesome-icon icon="fas fa-user" class="text-4xl" />
                 </div>
               </template>
 

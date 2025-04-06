@@ -73,7 +73,7 @@
                     <div
                       class="h-8 w-8 rounded-full border-2 border-teal-400 bg-teal-500 flex items-center justify-center text-white font-medium text-sm"
                     >
-                      {{ getUserInitials }}
+                      <font-awesome-icon icon="fas fa-user" />
                     </div>
                   </template>
                 </button>
