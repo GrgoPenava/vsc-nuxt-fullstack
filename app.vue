@@ -7,6 +7,6 @@
   <UiToastToaster />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import UiToastToaster from "@/components/ui/toast/Toaster.vue";
 </script>

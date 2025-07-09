@@ -85,6 +85,7 @@ export const useUserStore = defineStore("user", {
       password?: string;
       roleId?: string;
       verified?: boolean;
+      disabled?: boolean;
     }) {
       this.setLoading(true);
       this.setError(null);

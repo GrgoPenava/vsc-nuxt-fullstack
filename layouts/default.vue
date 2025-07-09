@@ -28,26 +28,33 @@
                 to="/"
                 active-class="text-teal-400"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
-                >Home</NuxtLink
+                >{{ t("common.home") }}</NuxtLink
               >
               <NuxtLink
                 to="/explore"
                 active-class="text-teal-400"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
-                >Explore</NuxtLink
+                >{{ t("common.explore") }}</NuxtLink
+              >
+              <NuxtLink
+                to="/profiles"
+                active-class="text-teal-400"
+                class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
+                >{{ t("common.profiles") }}</NuxtLink
               >
               <NuxtLink
                 v-if="isAdmin"
                 to="/admin/dashboard"
                 active-class="text-teal-400"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
-                >Dashboard</NuxtLink
+                >{{ t("common.dashboard") }}</NuxtLink
               >
             </div>
           </div>
 
           <div class="flex items-center space-x-4">
             <ThemeToggle />
+            <LanguageSwitcher />
 
             <template v-if="isLoggedIn">
               <div class="relative profile-dropdown">
@@ -55,11 +62,20 @@
                   @click="toggleProfileMenu"
                   class="flex items-center focus:outline-none profile-dropdown"
                 >
-                  <img
-                    :src="userAvatar"
-                    alt="User Avatar"
-                    class="h-8 w-8 rounded-full object-cover border-2 border-teal-400"
-                  />
+                  <template v-if="avatarUrl">
+                    <img
+                      :src="avatarUrl"
+                      alt="User Avatar"
+                      class="h-8 w-8 rounded-full object-cover border-2 border-teal-400"
+                    />
+                  </template>
+                  <template v-else>
+                    <div
+                      class="h-8 w-8 rounded-full border-2 border-teal-400 bg-teal-500 flex items-center justify-center text-white font-medium text-sm"
+                    >
+                      <font-awesome-icon icon="fas fa-user" />
+                    </div>
+                  </template>
                 </button>
 
                 <div
@@ -74,17 +90,17 @@
                   <NuxtLink
                     to="/profile"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    >Your Profile</NuxtLink
+                    >{{ t("common.profile") }}</NuxtLink
                   >
                   <NuxtLink
                     to="/settings/profile"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    >Edit Profile</NuxtLink
+                    >{{ t("profile.editProfile") }}</NuxtLink
                   >
                   <NuxtLink
                     to="/settings"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                    >Settings</NuxtLink
+                    >{{ t("common.settings") }}</NuxtLink
                   >
                   <div
                     class="border-t border-gray-100 dark:border-gray-700"
@@ -93,7 +109,7 @@
                     @click="signOut"
                     class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   >
-                    Sign out
+                    {{ t("common.logout") }}
                   </button>
                 </div>
               </div>
@@ -104,13 +120,13 @@
                 to="/login"
                 class="py-2 px-4 rounded-md hover:text-teal-400 transition-colors"
               >
-                Log in
+                {{ t("common.login") }}
               </NuxtLink>
               <NuxtLink
                 to="/register"
                 class="py-2 px-4 bg-teal-500 hover:bg-teal-600 rounded-md transition-colors"
               >
-                Sign up
+                {{ t("common.signup") }}
               </NuxtLink>
             </template>
 
@@ -154,18 +170,23 @@
           <NuxtLink
             to="/"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-            >Home</NuxtLink
+            >{{ t("common.home") }}</NuxtLink
           >
           <NuxtLink
             to="/explore"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-            >Explore</NuxtLink
+            >{{ t("common.explore") }}</NuxtLink
+          >
+          <NuxtLink
+            to="/profiles"
+            class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
+            >{{ t("common.profiles") }}</NuxtLink
           >
           <NuxtLink
             v-if="isAdmin"
             to="/admin/dashboard"
             class="block px-3 py-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-            >Dashboard</NuxtLink
+            >{{ t("common.dashboard") }}</NuxtLink
           >
         </div>
       </div>
@@ -214,18 +235,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useTranslation } from "@/composables/useTranslation";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher.vue";
 
 const authStore = useAuthStore();
+const { t } = useTranslation();
 
 // Dohvati podatke o prijavljenom korisniku iz auth store-a
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const isAdmin = computed(() => authStore.isAdmin);
 const userName = computed(() => authStore.user?.username || "");
-const userAvatar = computed(
-  () => authStore.user?.avatar || "https://i.pravatar.cc/150?img=30"
-);
+
+// Dohvati inicijale korisnika
+const getUserInitials = computed(() => {
+  if (!authStore.user) return "";
+
+  const firstName = authStore.user.firstName || "";
+  const lastName = authStore.user.lastName || "";
+
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  } else if (firstName) {
+    return firstName[0].toUpperCase();
+  } else if (lastName) {
+    return lastName[0].toUpperCase();
+  } else if (authStore.user.username) {
+    return authStore.user.username[0].toUpperCase();
+  }
+
+  return "U";
+});
+
+// Dohvati avatar URL
+const avatarUrl = ref<string | null>(null);
+const defaultAvatar = "https://i.pravatar.cc/150?img=30";
+const userAvatar = computed(() => avatarUrl.value || defaultAvatar);
 
 const profileMenuOpen = ref(false);
 const mobileMenuOpen = ref(false);
@@ -233,6 +279,18 @@ const isScrollingDown = ref(false);
 const atTop = ref(true);
 const header = ref<HTMLElement | null>(null);
 const lastScrollY = ref(0);
+
+// Dohvat avatara korisnika iz S3 bucketa
+async function fetchAvatarUrl() {
+  if (!authStore.user) return;
+
+  try {
+    avatarUrl.value = await authStore.getAvatarUrl(authStore.user.id);
+    console.log("navbar avatarUrl", avatarUrl.value);
+  } catch (err) {
+    console.error("Error fetching navbar avatar:", err);
+  }
+}
 
 function toggleProfileMenu() {
   profileMenuOpen.value = !profileMenuOpen.value;
@@ -280,7 +338,22 @@ onMounted(() => {
 
   // Add click event listener for closing dropdowns
   window.addEventListener("click", handleOutsideClick);
+
+  // Dohvati avatar URL kad je komponenta montirana
+  if (isLoggedIn.value) {
+    fetchAvatarUrl();
+  }
 });
+
+// Prati promjene korisnika kako bi osvježili avatar
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser) {
+      fetchAvatarUrl();
+    }
+  }
+);
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);

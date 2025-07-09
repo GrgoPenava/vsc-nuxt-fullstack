@@ -1,75 +1,98 @@
 import { H3Event, createError } from "h3";
-import { loginSchema, LoginInput } from "~/server/utils/validation";
 import { comparePasswords, generateToken } from "~/server/utils/auth";
 import prisma from "~/lib/prisma";
 
 export default defineEventHandler(async (event: H3Event) => {
   try {
-    // Dohvati podatke iz requesta
-    const body = await readBody(event);
+    // Dohvati podatke iz zahtjeva
+    const { email, password } = await readBody(event);
 
     // Validiraj podatke
-    const result = loginSchema.safeParse(body);
-
-    if (!result.success) {
+    if (!email || !password) {
       throw createError({
         statusCode: 400,
-        statusMessage: result.error.errors[0].message,
+        statusMessage: "Email i lozinka su obavezni",
       });
     }
 
-    const { email, password } = result.data as LoginInput;
-
-    // Provjeri postoji li korisnik s unesenim emailom
+    // Pronađi korisnika prema emailu
     const user = await prisma.user.findUnique({
       where: { email },
-      include: {
-        role: true,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        password: true,
+        avatar: true,
+        verified: true,
+        bio: true,
+        disabled: true,
+        roleId: true,
+        role: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
+    // Provjeri postoji li korisnik
     if (!user) {
       throw createError({
         statusCode: 401,
-        statusMessage: "Pogrešan email ili lozinka",
+        statusMessage: "Netočan email ili lozinka",
+      });
+    }
+
+    // Provjeri je li korisnik onemogućen
+    if (user.disabled) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Vaš račun je onemogućen",
       });
     }
 
     // Provjeri lozinku
-    const isPasswordValid = await comparePasswords(password, user.password);
-
-    if (!isPasswordValid) {
+    const passwordsMatch = await comparePasswords(password, user.password);
+    if (!passwordsMatch) {
       throw createError({
         statusCode: 401,
-        statusMessage: "Pogrešan email ili lozinka",
+        statusMessage: "Netočan email ili lozinka",
       });
     }
 
-    // Generiraj token
+    // Kreiraj token za prijavljenog korisnika
     const token = generateToken({
       id: user.id,
       email: user.email,
       role: user.role.name,
     });
 
-    // Pripremi odgovor bez osjetljivih podataka
+    // Izostavi lozinku iz odgovora
+    const { password: _, ...userWithoutPassword } = user;
+
+    // Pripremi podatke za odgovor
     const userResponse = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
-      role: user.role.name,
-      verified: user.verified,
+      id: userWithoutPassword.id,
+      username: userWithoutPassword.username,
+      email: userWithoutPassword.email,
+      firstName: userWithoutPassword.firstName,
+      lastName: userWithoutPassword.lastName,
+      avatar: userWithoutPassword.avatar,
+      role: userWithoutPassword.role.name,
+      verified: userWithoutPassword.verified,
+      bio: userWithoutPassword.bio,
     };
 
+    // Vrati podatke za uspješnu prijavu
     return {
-      message: "Prijava uspješna",
-      user: userResponse,
       token,
+      user: userResponse,
     };
   } catch (error: any) {
+    console.error("Greška pri prijavi:", error);
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage:

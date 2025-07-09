@@ -7,24 +7,25 @@
       <div class="container mx-auto px-4">
         <div class="max-w-3xl mx-auto text-center">
           <h1 class="text-4xl md:text-6xl font-bold mb-6">
-            Share Your <span class="text-teal-400">VS Code</span> Setup
+            {{ t("home.heroTitle").split("VS Code")[0] }}
+            <span class="text-teal-400">VS Code</span>
+            {{ t("home.heroTitle").split("VS Code")[1] }}
           </h1>
           <p class="text-xl md:text-2xl mb-8 text-gray-300">
-            Discover amazing editor setups, extensions, and themes from
-            developers around the world
+            {{ t("home.heroSubtitle") }}
           </p>
           <div class="flex flex-col sm:flex-row justify-center gap-4">
             <NuxtLink
-              to="/login"
+              to="/profiles"
               class="px-8 py-3 bg-teal-500 hover:bg-teal-600 rounded-md transition-colors text-center font-medium"
             >
-              Explore Profiles
+              {{ t("home.exploreProfiles") }}
             </NuxtLink>
             <NuxtLink
               to="/register"
               class="px-8 py-3 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-center font-medium"
             >
-              Create Account
+              {{ t("home.createAccount") }}
             </NuxtLink>
           </div>
         </div>
@@ -35,7 +36,7 @@
     <section class="py-16 bg-gray-50 dark:bg-gray-800">
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-12 text-center dark:text-white">
-          Featured VS Code Profiles
+          {{ t("home.featuredProfiles") }}
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -52,7 +53,7 @@
     <section class="py-16 bg-white dark:bg-gray-900">
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-12 text-center dark:text-white">
-          How It Works
+          {{ t("home.howItWorks") }}
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -63,10 +64,10 @@
               1
             </div>
             <h3 class="text-xl font-bold mb-2 dark:text-white">
-              Create an Account
+              {{ t("home.step1Title") }}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
-              Sign up for free and join our community of VS Code enthusiasts
+              {{ t("home.step1Description") }}
             </p>
           </div>
 
@@ -77,11 +78,10 @@
               2
             </div>
             <h3 class="text-xl font-bold mb-2 dark:text-white">
-              Share Your Setup
+              {{ t("home.step2Title") }}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
-              Upload screenshots, add extension lists, and describe your VS Code
-              configuration
+              {{ t("home.step2Description") }}
             </p>
           </div>
 
@@ -92,11 +92,10 @@
               3
             </div>
             <h3 class="text-xl font-bold mb-2 dark:text-white">
-              Discover & Engage
+              {{ t("home.step3Title") }}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
-              Explore setups from other developers, save favorites, and leave
-              comments
+              {{ t("home.step3Description") }}
             </p>
           </div>
         </div>
@@ -106,6 +105,10 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslation } from "@/composables/useTranslation";
+
+const { t } = useTranslation();
+
 interface Extension {
   id: string;
   name: string;
@@ -115,81 +118,58 @@ interface Extension {
 interface Profile {
   id: string;
   userName: string;
-  userAvatar: string;
-  title: string;
+  userAvatar: string | null;
+  name: string;
   description: string;
-  imageUrl: string;
-  likes: number;
+  imageUrl: string | null;
+  likeCount: number;
   extensions: Extension[];
 }
 
-// Sample data - in a real app this would come from an API
-const featuredProfiles = ref<Profile[]>([
-  {
-    id: "1",
-    userName: "Sarah Chen",
-    userAvatar: "https://i.pravatar.cc/150?img=5",
-    title: "React Developer Setup",
-    description:
-      "Clean, minimal setup for React development with a focus on productivity.",
-    imageUrl:
-      "https://res.cloudinary.com/practicaldev/image/fetch/s--JrHl4K_D--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/8ncoy6vc2eaufmvhe0ta.png",
-    likes: 243,
-    extensions: [
-      { id: "dbaeumer.vscode-eslint", name: "ESLint", publisher: "Microsoft" },
-      { id: "esbenp.prettier-vscode", name: "Prettier", publisher: "Prettier" },
-      {
-        id: "dsznajder.es7-react-js-snippets",
-        name: "ES7 React Snippets",
-        publisher: "dsznajder",
-      },
-    ],
-  },
-  {
-    id: "2",
-    userName: "Alex Morgan",
-    userAvatar: "https://i.pravatar.cc/150?img=12",
-    title: "Python Data Science Workspace",
-    description:
-      "Optimized for machine learning and data visualization projects.",
-    imageUrl:
-      "https://miro.medium.com/v2/resize:fit:1400/1*3JL5fKrnr_4FDN9SSPtcAw.png",
-    likes: 187,
-    extensions: [
-      { id: "ms-python.python", name: "Python", publisher: "Microsoft" },
-      { id: "ms-toolsai.jupyter", name: "Jupyter", publisher: "Microsoft" },
-      {
-        id: "mechatroner.rainbow-csv",
-        name: "Rainbow CSV",
-        publisher: "mechatroner",
-      },
-    ],
-  },
-  {
-    id: "3",
-    userName: "Miguel Rodriguez",
-    userAvatar: "https://i.pravatar.cc/150?img=68",
-    title: "Full-Stack JavaScript Theme",
-    description:
-      "Dark theme with custom icons for Node.js and Vue.js development.",
-    imageUrl:
-      "https://camo.githubusercontent.com/a5b3ede19b1aa76b0baeac0739a721c7f64d7d1e077d56285fb1f2ae2c6d1b19/68747470733a2f2f692e6962622e636f2f546678737930342f4e65772d4d6f6e6f6b61692d312e706e67",
-    likes: 312,
-    extensions: [
-      { id: "octref.vetur", name: "Vetur", publisher: "Pine Wu" },
-      {
-        id: "ritwickdey.liveserver",
-        name: "Live Server",
-        publisher: "Ritwick Dey",
-      },
-      {
-        id: "pkief.material-icon-theme",
-        name: "Material Icon Theme",
-        publisher: "Philipp Kief",
-      },
-    ],
-  },
-]);
+// Dohvat najpopularnijih profila iz API-ja
+const { data: popularProfiles, error: profileError } = await useFetch<
+  Profile[]
+>("/api/public/profiles/popular", {
+  key: "popular-profiles",
+  default: () => [],
+});
+
+// Mapirati API odgovor da odgovara strukturi
+const featuredProfiles = computed(() => {
+  if (popularProfiles.value.length === 0) {
+    // Ako nema profila, vrati prazna 3 placeholder profila
+    return Array(3)
+      .fill(null)
+      .map((_, index) => ({
+        id: `placeholder-${index}`,
+        userName: t("home.comingSoon"),
+        userAvatar: null,
+        name: t("home.profileComingSoon"),
+        description: t("home.beFirstToAdd"),
+        imageUrl: null,
+        likeCount: 0,
+        extensions: [],
+      }));
+  }
+
+  // Ako ima manje od 3 profila, dopuni sa placeholderima
+  const profiles = [...popularProfiles.value];
+
+  while (profiles.length < 3) {
+    profiles.push({
+      id: `placeholder-${profiles.length}`,
+      userName: t("home.comingSoon"),
+      userAvatar: null,
+      name: t("home.profileComingSoon"),
+      description: t("home.beFirstToAdd"),
+      imageUrl: null,
+      likeCount: 0,
+      extensions: [],
+    });
+  }
+
+  return profiles;
+});
 </script>
 
 <style scoped>
