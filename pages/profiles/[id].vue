@@ -445,41 +445,43 @@
 
     <!-- File Content Modal -->
     <div
-      v-if="showFileContent && profile?.jsonContent"
+      v-if="showPreviewModal"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
-      @click.self="showFileContent = false"
+      @click.self="closeFilePreview"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col"
       >
         <div
           class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
         >
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ profile.fileName }}
+            {{ t("profiles.preview") }} - {{ profile?.fileName }}
           </h3>
           <button
             class="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
-            @click="showFileContent = false"
+            @click="closeFilePreview"
           >
-            <font-awesome-icon
-              icon="far fa-circle-xmark"
-              class="w-5 h-5 text-gray-500 dark:text-gray-400"
-              alt="Close"
-            />
+            <font-awesome-icon icon="fas fa-circle-xmark" class="w-6 h-6" />
           </button>
         </div>
-        <div class="p-4 overflow-auto max-h-[80vh]">
-          <pre
-            v-if="isJsonContent"
-            class="text-sm bg-gray-50 dark:bg-gray-900 p-4 rounded-md overflow-auto"
-            v-html="formatJsonContent(profile.jsonContent)"
-          ></pre>
-          <pre
-            v-else
-            class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 p-4 rounded-md"
-            >{{ profile.jsonContent }}</pre
-          >
+        <div class="p-6 overflow-auto">
+          <div v-if="isPreviewLoading" class="text-center py-10">
+            <div class="loader"></div>
+            <p class="mt-4 text-gray-500 dark:text-gray-400">
+              {{ t("common.loading") }}
+            </p>
+          </div>
+          <div v-else-if="isPreviewError" class="text-center py-10">
+            <p class="text-red-500">{{ isPreviewError }}</p>
+          </div>
+          <div v-else-if="filePreviewContent">
+            <!-- Prikaz cijelog formatiranog JSON-a -->
+            <pre
+              class="text-sm bg-gray-100 dark:bg-gray-700 p-4 rounded-md overflow-auto"
+              >{{ JSON.stringify(filePreviewContent, null, 2) }}</pre
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -509,7 +511,10 @@ const commenting = ref(false);
 const liked = ref(false);
 const disliked = ref(false);
 const selectedImage = ref<string | null>(null);
-const showFileContent = ref(false);
+const showPreviewModal = ref(false);
+const filePreviewContent = ref<any>(null);
+const isPreviewLoading = ref(false);
+const isPreviewError = ref<string | null>(null);
 const currentSlide = ref(0);
 const modalImageIndex = ref(0);
 
@@ -844,148 +849,32 @@ async function copyProfileContent() {
 
 // Za pregled datoteke
 async function showFilePreview() {
-  if (!profile.value?.jsonContent && !profile.value?.fileUrl) return;
+  if (!profile.value?.fileUrl) return;
 
-  // Ako već imamo jsonContent, samo prikaži modal
-  if (profile.value.jsonContent) {
-    showFileContent.value = true;
-    return;
-  }
+  isPreviewLoading.value = true;
+  isPreviewError.value = null;
+  showPreviewModal.value = true;
 
-  // Ako nemamo jsonContent, pokušaj dohvatiti datoteku
-  if (profile.value.fileUrl) {
-    try {
-      loading.value = true;
-      const response = await fetch(profile.value.fileUrl);
-      profile.value.jsonContent = await response.text();
-      showFileContent.value = true;
-    } catch (err) {
-      console.error("Failed to fetch file content:", err);
-      toast.toast({
-        title: t("common.error"),
-        description: t("profiles.previewFailed"),
-        variant: "destructive",
-      });
-    } finally {
-      loading.value = false;
+  try {
+    const response = await fetch(profile.value.fileUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const fileContent = await response.json();
+    filePreviewContent.value = fileContent;
+  } catch (err: any) {
+    console.error("Error fetching or parsing profile file:", err);
+    isPreviewError.value = t("profiles.previewFailed");
+    filePreviewContent.value = null; // Clear content on error
+  } finally {
+    isPreviewLoading.value = false;
   }
 }
 
-// Provjeri je li sadržaj JSON
-const isJsonContent = computed(() => {
-  if (!profile.value?.jsonContent) return false;
-  try {
-    JSON.parse(profile.value.jsonContent);
-    return true;
-  } catch (e) {
-    return false;
-  }
-});
-
-// Formatiranje JSON-a s bojama i poboljšanim rukovanjem ugniježđenim stringovima
-function formatJsonContent(jsonString: string): string {
-  try {
-    // Raščlani JSON i ponovno ga formatiraj s razmacima za bolje čitanje
-    const obj = JSON.parse(jsonString);
-    const formatted = JSON.stringify(obj, null, 2);
-
-    // Zamijeni posebne znakove kako bi se izbjeglo XSS ranjivosti
-    const escaped = formatted
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-
-    // Prvo pronađi i obradi sve ugniježđene JSON stringove
-    let processedContent = escaped;
-
-    // Traži potencijalne JSON stringove unutar vrijednosti
-    const stringPattern = /: &quot;(.*?)&quot;/g;
-    processedContent = processedContent.replace(
-      stringPattern,
-      (match, capturedStr) => {
-        // Provjeri je li uhvaćeni string potencijalno JSON
-        if (
-          (capturedStr.includes("\\&quot;") ||
-            capturedStr.includes("\\\\&quot;")) &&
-          (capturedStr.startsWith("{") || capturedStr.startsWith("["))
-        ) {
-          try {
-            // Pokušaj dekodirati unutarnji string
-            let innerString = capturedStr
-              .replace(/\\&quot;/g, '"')
-              .replace(/\\\\&quot;/g, '\\"')
-              .replace(/\\\\/g, "\\");
-
-            // Pokušaj parsirati kao JSON
-            JSON.parse(innerString);
-
-            // Ako je uspješno parsiran, formatiraj ga s uvlakama (oboji ga drugom bojom za lakše razlikovanje)
-            const formattedInner = innerString
-              .replace(/\n/g, "<br>")
-              .replace(/ /g, "&nbsp;")
-              .replace(/\\r\\n/g, "<br>")
-              .replace(/\\n/g, "<br>");
-
-            return (
-              ': <span style="color: #98c379;">&quot;<span style="color: #b9ca88;">' +
-              formattedInner +
-              "</span>&quot;</span>"
-            );
-          } catch {
-            // Ako nije valjan JSON, tretiramo ga kao običan string
-            return (
-              ': <span style="color: #98c379;">&quot;' +
-              capturedStr +
-              "&quot;</span>"
-            );
-          }
-        }
-        return (
-          ': <span style="color: #98c379;">&quot;' +
-          capturedStr +
-          "&quot;</span>"
-        );
-      }
-    );
-
-    // Dodaj bojanje sintakse za ostale elemente
-    return (
-      processedContent
-        // ključevi (imena svojstava)
-        .replace(
-          /&quot;([^&]*)&quot;:/g,
-          '<span style="color: #e06c75;">&quot;$1&quot;</span>:'
-        )
-        // brojevi
-        .replace(
-          /: ([0-9]+)(,?)/g,
-          ': <span style="color: #d19a66;">$1</span>$2'
-        )
-        // boolean vrijednosti i null
-        .replace(
-          /: (true|false|null)(,?)/g,
-          ': <span style="color: #56b6c2;">$1</span>$2'
-        )
-        // zagrade za objekte
-        .replace(
-          /[{}]/g,
-          (match) => `<span style="color: #abb2bf;">${match}</span>`
-        )
-        // zagrade za polja
-        .replace(
-          /[\[\]]/g,
-          (match) => `<span style="color: #abb2bf;">${match}</span>`
-        )
-        // zarezi
-        .replace(/,/g, '<span style="color: #abb2bf;">,</span>')
-    );
-  } catch (e) {
-    console.error("Failed to format JSON:", e);
-    return jsonString;
-  }
+function closeFilePreview() {
+  showPreviewModal.value = false;
+  filePreviewContent.value = null;
+  isPreviewError.value = null;
 }
 
 // Učitaj profil pri montiranju komponente
