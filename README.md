@@ -1,8 +1,37 @@
 # VS Code Profiles
 
-Modern web aplikacija za dijeljenje i otkrivanje VS Code postavki, ekstenzija i tema. Omogućuje developerima da dijele svoje razvojno okruženje sa zajednicom.
+Web aplikacija za dijeljenje i otkrivanje VS Code postavki, ekstenzija i tema. Omogućuje developerima da dijele svoje razvojno okruženje sa zajednicom.
 
-![VS Code Profiles Screenshot](https://example.com/screenshot.png)
+## 📸 Screenshots
+
+### 🏠 Home Page
+![Home](screenshots/Home.png)
+
+### 🇭🇷 Croatian Language – Home Page
+![Croatian](screenshots/HrvatskiJezikPočetna.png)
+
+### 📊 Dashboard View
+![Dashboard](screenshots/Dashboard.png)
+
+### 🌙 Dark Mode
+![DarkMode](screenshots/DarkMode.png)
+
+### 👥 User Profiles
+![Profiles](screenshots/Profiles.png)
+
+### ✏️ Edit User
+![EditUser](screenshots/EditUser.png)
+
+### 🧑‍💼 User Profile
+![UserProfile](screenshots/UserProfile.png)
+
+### ⚙️ Edit User Profile
+![EditUserProfile](screenshots/EditUserProfile.png)
+
+### 💻 VS Code Profile Example
+![VscodeProfile](screenshots/VscodeProfile.png)
+
+---
 
 ## Tehnički Stack
 
